@@ -3,59 +3,59 @@ const PATH = 1;
 const WATER = 2;
 const TREE = 3;
 const FLOWER = 4;
-const SAND = 5;
+const COAST = 5;
+const BRIDGE = 6;
+const STATUE_BASE = 7;
+const STATUE_TOP = 8;
+const OCEAN = 9;
 
 export const TILE_SIZE = 48;
 
-// 20 columns x 15 rows — same layout, bigger tiles
+// 20 columns x 15 rows for exact Wargroove style screenshot
 export const MAP_DATA = [
-  [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
-  [2,0,0,0,0,0,3,0,0,0,0,0,0,3,0,0,0,0,0,2],
-  [2,0,0,4,0,0,0,0,1,1,1,0,0,0,0,4,0,0,0,2],
-  [2,0,0,0,0,3,0,0,1,0,1,0,3,0,0,0,0,0,0,2],
-  [2,0,4,0,0,0,0,0,1,0,1,0,0,0,0,0,4,0,0,2],
-  [2,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,2],
-  [2,3,0,0,1,1,1,1,1,0,1,1,1,1,0,0,0,3,0,2],
-  [2,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,2],
-  [2,0,0,0,1,0,0,0,0,0,0,0,0,1,0,4,0,0,0,2],
-  [2,0,4,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,2],
-  [2,0,0,0,1,1,1,1,1,0,1,1,1,1,0,0,0,4,0,2],
-  [2,0,0,0,0,0,0,0,5,5,5,0,0,0,0,0,0,0,0,2],
-  [2,0,3,0,0,0,0,0,5,5,5,0,0,0,3,0,0,0,0,2],
-  [2,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,0,0,2],
-  [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+  [0, 0, 0, 0, 0, 2, 0, 0, 8, 8, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+  [0, 3, 3, 3, 3, 2, 0, 0, 7, 7, 0, 0, 2, 3, 3, 0, 0, 0, 0, 0],
+  [0, 3, 0, 0, 3, 2, 0, 3, 3, 1, 3, 3, 2, 0, 3, 3, 3, 0, 0, 0],
+  [2, 2, 0, 0, 0, 2, 3, 3, 0, 1, 0, 3, 2, 0, 0, 0, 3, 3, 0, 0],
+  [0, 2, 2, 0, 0, 2, 2, 2, 0, 1, 0, 2, 2, 2, 0, 0, 0, 3, 3, 0],
+  [0, 0, 2, 0, 0, 0, 0, 2, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 3, 3],
+  [0, 0, 2, 2, 0, 0, 0, 2, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3],
+  [0, 0, 0, 2, 2, 2, 0, 2, 0, 1, 0, 2, 0, 0, 0, 0, 3, 3, 0, 0],
+  [0, 0, 0, 0, 0, 2, 0, 2, 0, 1, 0, 2, 0, 0, 3, 3, 3, 0, 0, 0],
+  [0, 0, 0, 2, 2, 2, 1, 6, 1, 1, 1, 6, 1, 1, 1, 0, 0, 3, 3, 0],
+  [0, 0, 2, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1, 1, 0, 0, 3, 0],
+  [0, 0, 2, 0, 0, 3, 3, 2, 0, 0, 0, 2, 0, 0, 0, 1, 1, 0, 0, 0],
+  [0, 0, 2, 0, 3, 3, 3, 2, 0, 0, 0, 2, 5, 5, 5, 5, 1, 5, 5, 5],
+  [0, 0, 2, 2, 2, 2, 2, 2, 5, 5, 5, 2, 9, 9, 9, 9, 9, 9, 9, 9],
+  [0, 0, 0, 0, 0, 0, 0, 2, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9]
 ];
 
-export const MAP_WIDTH  = MAP_DATA[0].length * TILE_SIZE;  // 960px
-export const MAP_HEIGHT = MAP_DATA.length    * TILE_SIZE;  // 720px
+export const MAP_WIDTH  = MAP_DATA[0].length * TILE_SIZE;
+export const MAP_HEIGHT = MAP_DATA.length    * TILE_SIZE;
 
-// Safe spawn: row 7 col 8 — center of the inner open area (grass, not a zone)
-export const SPAWN_X = 8.5 * TILE_SIZE;
-export const SPAWN_Y = 7.5 * TILE_SIZE;
+// Safe spawn: center path area
+export const SPAWN_X = 9.5 * TILE_SIZE;
+export const SPAWN_Y = 6.5 * TILE_SIZE;
 
-/* ── Palette ───────────────────────────────────────────────────── */
+/* ── Wargroove RPG Palette ─────────────────────────────────────── */
 const C = {
-  grassBase:   '#3a8c3f',
-  grassLight:  '#4caf50',
-  grassDark:   '#2e6e32',
-  grassAccent: '#56c95b',
-  pathBase:    '#c8a96e',
-  pathLight:   '#ddc088',
-  pathEdge:    '#a8844a',
-  waterDeep:   '#0d47a1',
-  waterMid:    '#1565c0',
-  waterLight:  '#1976d2',
-  waterShine:  '#42a5f5',
-  treeTrunk:   '#6d4c41',
-  treeDark:    '#1b5e20',
-  treeMid:     '#2e7d32',
-  treeLight:   '#388e3c',
-  flowerPetal: '#e91e63',
-  flowerPink:  '#f06292',
-  flowerYellow:'#fff176',
-  sandBase:    '#f5deb3',
-  sandLight:   '#fdf0d0',
-  sandDark:    '#d4b483',
+  grassBase:   '#74b044',
+  grassLight:  '#8bc452',
+  grassDark:   '#5c9135',
+  pathBase:    '#e5c282',
+  pathDark:    '#cba564',
+  waterDeep:   '#286ab2',
+  waterMid:    '#3984cf',
+  waterLight:  '#63a0de',
+  treeTrunk:   '#5a3721',
+  treeDark:    '#1e4c21',
+  treeMid:     '#2a692a',
+  sandBase:    '#e1c890',
+  wood:        '#aa7d53',
+  woodDark:    '#7c5634',
+  statueMid:   '#6e6a67',
+  statueDark:  '#4c4946',
+  statueLight: '#94908a'
 };
 
 let _waterFrame = 0;
@@ -74,157 +74,126 @@ export const drawTileMap = (ctx, cameraX, cameraY, canvasWidth, canvasHeight) =>
       const sy   = row * TILE_SIZE - cameraY;
       const T    = TILE_SIZE;
 
-      switch (tile) {
+      ctx.fillStyle = C.grassBase;
+      ctx.fillRect(sx, sy, T, T);
 
+      switch (tile) {
         case GRASS: {
-          ctx.fillStyle = C.grassBase;
-          ctx.fillRect(sx, sy, T, T);
-          // subtle variation by position
-          if ((row + col) % 3 === 0) {
+          if ((row + col) % 4 === 0) {
             ctx.fillStyle = C.grassLight;
-            ctx.fillRect(sx, sy, T, T);
+            ctx.fillRect(sx + 4, sy + 4, T - 8, T - 8);
           }
-          // tiny grass blades
-          ctx.fillStyle = C.grassAccent;
-          const seed = (row * 31 + col * 17);
-          const bx = [4, 12, 22, 33, 40];
-          const by = [6, 18, 30, 10, 40];
-          for (let b = 0; b < 3; b++) {
-            const gx = sx + bx[(seed + b * 7) % bx.length];
-            const gy = sy + by[(seed + b * 5) % by.length];
-            ctx.fillRect(gx, gy, 2, 5);
+          ctx.fillStyle = C.grassLight;
+          const seed = row * 31 + col * 17;
+          for (let b = 0; b < 4; b++) {
+            ctx.fillRect(sx + ((seed + b * 13) % T), sy + ((seed + b * 7) % T), 4, 4);
           }
           break;
         }
 
         case PATH: {
-          // Base sand path
           ctx.fillStyle = C.pathBase;
           ctx.fillRect(sx, sy, T, T);
-          // lighter center
-          ctx.fillStyle = C.pathLight;
-          ctx.fillRect(sx + 4, sy + 4, T - 8, T - 8);
-          // pebble dots
-          ctx.fillStyle = C.pathEdge;
-          const ps = (row * 13 + col * 7);
-          const px = [8, 20, 33, 14, 38];
-          const py = [10, 28, 16, 38, 6];
-          for (let p = 0; p < 2; p++) {
-            ctx.beginPath();
-            ctx.arc(sx + px[(ps + p * 3) % px.length], sy + py[(ps + p * 4) % py.length], 2, 0, Math.PI * 2);
-            ctx.fill();
+          ctx.fillStyle = C.pathDark;
+          ctx.fillRect(sx, sy, T, 4);
+          ctx.fillRect(sx, sy + T - 4, T, 4);
+          if (MAP_DATA[row]?.[col-1] !== PATH && MAP_DATA[row]?.[col-1] !== BRIDGE) {
+             ctx.fillRect(sx, sy, 4, T);
           }
-          // edge shading
-          ctx.fillStyle = 'rgba(0,0,0,0.06)';
-          ctx.fillRect(sx, sy, T, 2);
-          ctx.fillRect(sx, sy, 2, T);
-          ctx.fillStyle = 'rgba(255,255,255,0.08)';
-          ctx.fillRect(sx, sy + T - 2, T, 2);
-          ctx.fillRect(sx + T - 2, sy, 2, T);
+          if (MAP_DATA[row]?.[col+1] !== PATH && MAP_DATA[row]?.[col+1] !== BRIDGE) {
+             ctx.fillRect(sx + T - 4, sy, 4, T);
+          }
+          ctx.beginPath();
+          ctx.arc(sx + T/2, sy + T/2, 2, 0, Math.PI*2);
+          ctx.fill();
           break;
         }
 
-        case WATER: {
-          const phase = _waterFrame / 60;
-          ctx.fillStyle = C.waterDeep;
+        case WATER:
+        case OCEAN: {
+          const isOcean = tile === OCEAN;
+          ctx.fillStyle = isOcean ? '#1d4d8a' : C.waterMid;
           ctx.fillRect(sx, sy, T, T);
-          // wave bands
+          
+          const phase = _waterFrame / 60;
+          ctx.fillStyle = isOcean ? C.waterDeep : C.waterLight;
+          ctx.fillRect(sx, sy + 6 + Math.sin(phase * Math.PI*2 + col) * 4, T, 4);
+          ctx.fillRect(sx, sy + 28 + Math.sin(phase * Math.PI*2 + col + 1) * 4, T, 4);
+          
+          // Edge borders (banks)
+          ctx.fillStyle = C.grassDark;
+          if (MAP_DATA[row-1]?.[col] === GRASS || MAP_DATA[row-1]?.[col] === TREE) ctx.fillRect(sx, sy, T, 6);
+          if (MAP_DATA[row+1]?.[col] === GRASS || MAP_DATA[row+1]?.[col] === TREE) ctx.fillRect(sx, sy + T - 6, T, 6);
+          if (MAP_DATA[row]?.[col-1] === GRASS || MAP_DATA[row]?.[col-1] === TREE) ctx.fillRect(sx, sy, 6, T);
+          if (MAP_DATA[row]?.[col+1] === GRASS || MAP_DATA[row]?.[col+1] === TREE) ctx.fillRect(sx + T - 6, sy, 6, T);
+          break;
+        }
+
+        case BRIDGE: {
+          // Water underneath
           ctx.fillStyle = C.waterMid;
-          ctx.fillRect(sx, sy + 4 + Math.sin(phase * Math.PI * 2 + col * 0.8) * 3, T, 6);
-          ctx.fillRect(sx, sy + 22 + Math.sin(phase * Math.PI * 2 + col * 0.5 + 1) * 3, T, 6);
-          ctx.fillRect(sx, sy + 38 + Math.sin(phase * Math.PI * 2 + col * 0.6 + 2) * 3, T, 6);
-          // shine sparkle
-          if ((_waterFrame + row * 7 + col * 3) % 20 < 4) {
-            ctx.fillStyle = C.waterShine;
-            ctx.fillRect(sx + 10 + (col % 5) * 6, sy + 12 + (row % 3) * 10, 3, 2);
+          ctx.fillRect(sx, sy, T, T);
+          
+          // Wood planks
+          ctx.fillStyle = C.wood;
+          ctx.fillRect(sx, sy + 10, T, T - 20);
+          ctx.fillStyle = C.woodDark;
+          for (let i=0; i<T; i+=8) {
+             ctx.fillRect(sx + i, sy + 10, 2, T - 20);
           }
-          // border darkness
-          ctx.fillStyle = 'rgba(0,0,0,0.25)';
-          ctx.fillRect(sx, sy, T, 2);
-          ctx.fillRect(sx, sy, 2, T);
-          ctx.fillRect(sx, sy + T - 2, T, 2);
-          ctx.fillRect(sx + T - 2, sy, 2, T);
+          // Guard rails
+          ctx.fillRect(sx, sy + 6, T, 4);
+          ctx.fillRect(sx, sy + T - 10, T, 4);
           break;
         }
 
         case TREE: {
-          // ground under tree
           ctx.fillStyle = C.grassDark;
           ctx.fillRect(sx, sy, T, T);
-          // trunk
+          // Trunk
           ctx.fillStyle = C.treeTrunk;
-          ctx.fillRect(sx + T/2 - 5, sy + T/2 + 2, 10, T/2 - 4);
-          // shadow ellipse
-          ctx.beginPath();
-          ctx.ellipse(sx + T/2, sy + T - 6, 12, 5, 0, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(0,0,0,0.25)';
-          ctx.fill();
-          // crown layers
-          for (let layer = 0; layer < 3; layer++) {
-            ctx.beginPath();
-            ctx.arc(sx + T/2, sy + T/2 - 4 - layer * 4, 14 - layer * 2, 0, Math.PI * 2);
-            ctx.fillStyle = [C.treeDark, C.treeMid, C.treeLight][layer];
-            ctx.fill();
-          }
-          // highlight
-          ctx.beginPath();
-          ctx.arc(sx + T/2 - 4, sy + T/2 - 12, 5, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255,255,255,0.15)';
-          ctx.fill();
+          ctx.fillRect(sx + T/2 - 4, sy + T/2, 8, T/2 - 4);
+          // Foliage
+          ctx.fillStyle = C.treeDark;
+          ctx.fillRect(sx + 4, sy + 8, T - 8, T/2 + 4);
+          ctx.fillStyle = C.treeMid;
+          ctx.fillRect(sx + 8, sy + 4, T - 16, T/2);
+          ctx.fillRect(sx + 8, sy + 16, T - 16, Math.floor(T/3));
           break;
         }
-
-        case FLOWER: {
-          ctx.fillStyle = C.grassBase;
-          ctx.fillRect(sx, sy, T, T);
-          ctx.fillStyle = C.grassLight;
-          ctx.fillRect(sx, sy, T, T);
-          // stem
-          ctx.fillStyle = '#388e3c';
-          ctx.fillRect(sx + T/2 - 1, sy + T/2 + 2, 2, 12);
-          // petals
-          const petals = 5;
-          for (let p = 0; p < petals; p++) {
-            const angle = (p / petals) * Math.PI * 2;
-            ctx.beginPath();
-            ctx.ellipse(
-              sx + T/2 + Math.cos(angle) * 7,
-              sy + T/2 + Math.sin(angle) * 7,
-              5, 3, angle, 0, Math.PI * 2
-            );
-            ctx.fillStyle = p % 2 === 0 ? C.flowerPetal : C.flowerPink;
-            ctx.fill();
-          }
-          // center
-          ctx.beginPath();
-          ctx.arc(sx + T/2, sy + T/2, 4, 0, Math.PI * 2);
-          ctx.fillStyle = C.flowerYellow;
-          ctx.fill();
-          break;
+        
+        case COAST: {
+           ctx.fillStyle = C.sandBase;
+           ctx.fillRect(sx, sy, T, T);
+           ctx.fillStyle = C.pathDark;
+           if ((row+col)%2===0) {
+             ctx.fillRect(sx + 10, sy + 10, 4, 4);
+           }
+           break;
         }
 
-        case SAND: {
-          ctx.fillStyle = C.sandBase;
-          ctx.fillRect(sx, sy, T, T);
-          ctx.fillStyle = C.sandLight;
-          ctx.fillRect(sx + 3, sy + 3, T - 6, T - 6);
-          // ripple lines
-          ctx.strokeStyle = C.sandDark;
-          ctx.lineWidth = 1;
-          ctx.globalAlpha = 0.4;
-          for (let r = 0; r < 3; r++) {
-            ctx.beginPath();
-            ctx.moveTo(sx + 6, sy + 10 + r * 12);
-            ctx.quadraticCurveTo(sx + T/2, sy + 6 + r * 12, sx + T - 6, sy + 10 + r * 12);
-            ctx.stroke();
-          }
-          ctx.globalAlpha = 1;
-          break;
+        case STATUE_BASE: {
+           ctx.fillStyle = C.statueDark;
+           ctx.fillRect(sx, sy, T, T);
+           ctx.fillStyle = C.statueMid;
+           ctx.beginPath();
+           ctx.arc(sx + T/2, sy + T/2, T/2 - 4, 0, Math.PI*2);
+           ctx.fill();
+           ctx.fillStyle = 'rgba(0,0,0,0.3)';
+           ctx.fillRect(sx + 4, sy + 4, T-8, T/2);
+           break;
         }
-
-        default:
-          ctx.fillStyle = C.grassBase;
-          ctx.fillRect(sx, sy, T, T);
+        
+        case STATUE_TOP: {
+           ctx.fillStyle = C.statueMid;
+           // Arch / Bell top shape
+           ctx.fillRect(sx + 8, sy + 10, T - 16, T - 10);
+           ctx.fillStyle = C.statueLight;
+           ctx.fillRect(sx + 12, sy + 12, T - 24, T - 20);
+           ctx.fillStyle = C.statueDark;
+           ctx.fillRect(sx + 16, sy + 4, T - 32, 6);
+           break;
+        }
       }
     }
   }
@@ -235,5 +204,5 @@ export const checkCollision = (x, y) => {
   const row = Math.floor(y / TILE_SIZE);
   if (row < 0 || row >= MAP_DATA.length || col < 0 || col >= MAP_DATA[0].length) return true;
   const tile = MAP_DATA[row][col];
-  return tile === WATER || tile === TREE;
+  return tile === WATER || tile === OCEAN || tile === TREE || tile === STATUE_BASE || tile === STATUE_TOP;
 };

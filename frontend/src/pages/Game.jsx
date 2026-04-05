@@ -3,33 +3,38 @@ import { GameEngine } from '../game/GameEngine';
 import { useAuth } from '../hooks/useAuth';
 import { getZones, getMyProgress, saveProgress, getLeaderboard } from '../api/gameAPI';
 import { useNavigate } from 'react-router-dom';
+import '../App.css';
 
-/* ── Palette ───────────────────────────────────────────────────── */
+/* ── RPG Palette ──────────────────────────────────────────── */
 const THEME = {
-  bg:          '#0f0a1e',
-  bgMid:       '#130d25',
-  bgCard:      'rgba(255,255,255,0.04)',
-  border:      'rgba(139,92,246,0.25)',
-  borderBright:'rgba(139,92,246,0.6)',
-  gold:        '#fbbf24',
-  goldGlow:    'rgba(251,191,36,0.35)',
-  purple:      '#8b5cf6',
-  purpleLight: '#a78bfa',
-  teal:        '#2dd4bf',
-  tealGlow:    'rgba(45,212,191,0.3)',
-  text:        '#e2e8f0',
-  textMuted:   '#64748b',
-  textDim:     '#94a3b8',
-  green:       '#34d399',
-  red:         '#f87171',
+  bg:           '#1a3a6a',
+  bgMid:        '#2c5f99',
+  bgCard:       'rgba(193,154,73,0.15)',
+  border:       '#3d2b1f',
+  borderBright: '#8b6914',
+  gold:         '#c19a49',
+  goldGlow:     'rgba(193,154,73,0.5)',
+  parchment:    '#e8d5a3',
+  parchLight:   '#f5e6c8',
+  parchDark:    '#c4a96a',
+  woodDark:     '#3d2b1f',
+  woodMid:      '#5c3d28',
+  text:         '#3d2b1f',
+  textMuted:    '#7a6542',
+  textDim:      '#b8985a',
+  textCream:    '#f5e6c8',
+  green:        '#2d5a27',
+  greenLight:   '#5cb85c',
+  red:          '#8b2500',
+  redLight:     '#c0392b',
 };
 
 const RIGHT_COLORS = {
-  education: '#38bdf8',
-  food:      '#4ade80',
-  safety:    '#fb923c',
-  health:    '#f472b6',
-  play:      '#a78bfa',
+  education: '#4a90d9',
+  food:      '#5cb85c',
+  safety:    '#e67e22',
+  health:    '#e74c8a',
+  play:      '#9b59b6',
 };
 const RIGHT_ICONS = {
   education: '📚',
@@ -40,17 +45,29 @@ const RIGHT_ICONS = {
 };
 const ALL_RIGHTS = ['education', 'food', 'safety', 'health', 'play'];
 
-/* ── Small reusable components ─────────────────────────────────── */
-const Divider = () => (
-  <div style={{ height: 1, background: THEME.border, margin: '12px 0' }} />
+/* ── Small reusable components ──────────────────────────────── */
+const RPGDivider = () => (
+  <div style={{
+    height: 3,
+    background: 'linear-gradient(90deg, transparent, #3d2b1f, transparent)',
+    margin: '10px 0',
+    position: 'relative',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  }}>
+    <span style={{
+      background: THEME.parchment, padding: '0 6px',
+      color: THEME.gold, fontSize: 8, position: 'relative', top: -1,
+    }}>◆</span>
+  </div>
 );
 
 const SectionLabel = ({ children, icon }) => (
   <div style={{
     display: 'flex', alignItems: 'center', gap: 6,
-    fontSize: 10, fontWeight: 700, letterSpacing: '0.12em',
-    textTransform: 'uppercase', color: THEME.purpleLight,
-    marginBottom: 10,
+    fontFamily: "'Press Start 2P', monospace",
+    fontSize: 7, fontWeight: 700, letterSpacing: '0.1em',
+    textTransform: 'uppercase', color: THEME.gold,
+    marginBottom: 8,
   }}>
     {icon && <span>{icon}</span>}
     {children}
@@ -71,6 +88,7 @@ const Game = () => {
   const [leaderboard,  setLeaderboard]  = useState([]);
   const [activeZone,   setActiveZone]   = useState(null);
   const [quizQuestion, setQuizQuestion] = useState(null);
+  const [dialogue,     setDialogue]     = useState(null);
   const [quizIndex,    setQuizIndex]    = useState(0);
   const [quizScore,    setQuizScore]    = useState(0);
   const [quizDone,     setQuizDone]     = useState(false);
@@ -78,7 +96,7 @@ const Game = () => {
   const [badgePopup,   setBadgePopup]   = useState(null);
   const [loading,      setLoading]      = useState(true);
 
-  /* ── Load data ──────────────────────────────────────────────── */
+  /* ── Load data ──────────────────────────────────────────── */
   useEffect(() => {
     (async () => {
       try {
@@ -96,7 +114,7 @@ const Game = () => {
     })();
   }, [token]);
 
-  /* ── Init engine ────────────────────────────────────────────── */
+  /* ── Init engine ────────────────────────────────────────── */
   useEffect(() => {
     if (loading || zones.length === 0 || !canvasRef.current) return;
     const completedIds = progress?.zonesCompleted?.map(z => z.zoneId?._id || z.zoneId) || [];
@@ -109,19 +127,30 @@ const Game = () => {
     return () => engine.stop();
   }, [loading, zones]);
 
-  /* ── Zone enter ─────────────────────────────────────────────── */
+  /* ── Zone enter ─────────────────────────────────────────── */
   const handleZoneEnter = useCallback((zone) => {
     if (!zone.questions?.length) return;
     setActiveZone(zone);
-    setQuizIndex(0);
-    setQuizScore(0);
-    setQuizDone(false);
-    setFeedback(null);
-    setQuizQuestion(zone.questions[0]);
+    
+    // Wargroove style dialogue before quiz
+    const npcName = zone.position?.npc ? zone.position.npc.charAt(0).toUpperCase() + zone.position.npc.slice(1) : 'NPC';
+    setDialogue({
+      name: npcName,
+      text: `Hold it right there! If you want to explore the ${zone.name}, you gotta answer my questions first!`,
+      onComplete: () => {
+        setDialogue(null);
+        setQuizIndex(0);
+        setQuizScore(0);
+        setQuizDone(false);
+        setFeedback(null);
+        setQuizQuestion(zone.questions[0]);
+      }
+    });
+    
     if (engineRef.current) engineRef.current.running = false;
   }, []);
 
-  /* ── Answer ─────────────────────────────────────────────────── */
+  /* ── Answer ─────────────────────────────────────────────── */
   const handleAnswer = async (optionIndex) => {
     const correct   = optionIndex === quizQuestion.correctAnswer;
     const newScore  = correct ? quizScore + 1 : quizScore;
@@ -165,9 +194,10 @@ const Game = () => {
     }, 1600);
   };
 
-  /* ── Close quiz ─────────────────────────────────────────────── */
+  /* ── Close quiz ─────────────────────────────────────────── */
   const closeQuiz = () => {
     setActiveZone(null);
+    setDialogue(null);
     setQuizQuestion(null);
     setQuizDone(false);
     setFeedback(null);
@@ -178,21 +208,28 @@ const Game = () => {
     }
   };
 
-  /* ── Loading screen ─────────────────────────────────────────── */
+  /* ── Loading screen ─────────────────────────────────────── */
   if (loading) return (
     <div style={{
       height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: THEME.bg, flexDirection: 'column', gap: 16,
+      background: 'transparent',
+      flexDirection: 'column', gap: 16,
     }}>
-      <div style={{ fontSize: 64 }}>🌍</div>
-      <div style={{ color: THEME.gold, fontSize: 22, fontWeight: 700, fontFamily: 'Georgia, serif' }}>
+      <div style={{ fontSize: 64, animation: 'rpgFloat 3s ease-in-out infinite' }}>🌍</div>
+      <div style={{
+        fontFamily: "'Press Start 2P', monospace", fontSize: 14,
+        color: THEME.parchLight, textShadow: '2px 2px 0 #2a1a0e',
+      }}>
         Loading Rights Quest…
       </div>
-      <div style={{ color: THEME.textMuted, fontSize: 13 }}>Preparing your adventure</div>
+      <div style={{
+        fontFamily: "'VT323', monospace", fontSize: 20,
+        color: THEME.gold,
+      }}>Preparing your adventure</div>
     </div>
   );
 
-  /* ── Derived state ──────────────────────────────────────────── */
+  /* ── Derived state ──────────────────────────────────────── */
   const xp             = progress?.xp    || 0;
   const level          = progress?.level || 1;
   const xpInLevel      = xp % 100;
@@ -227,7 +264,6 @@ const Game = () => {
           </div>
           <div style={S.xpTrack}>
             <div style={{ ...S.xpFill, width: `${xpInLevel}%` }} />
-            <div style={{ ...S.xpSheen, width: `${xpInLevel}%` }} />
           </div>
           <div style={S.dotRow}>
             {ALL_RIGHTS.map(r => {
@@ -235,9 +271,9 @@ const Game = () => {
               return (
                 <div key={r} title={r} style={{
                   ...S.dot,
-                  background: done ? RIGHT_COLORS[r] : 'rgba(255,255,255,0.08)',
-                  boxShadow:  done ? `0 0 10px ${RIGHT_COLORS[r]}` : 'none',
-                  border: `2px solid ${done ? RIGHT_COLORS[r] : 'rgba(255,255,255,0.12)'}`,
+                  background: done ? RIGHT_COLORS[r] : THEME.parchDark,
+                  boxShadow: done ? `0 0 8px ${RIGHT_COLORS[r]}` : 'none',
+                  border: `2px solid ${done ? RIGHT_COLORS[r] : THEME.woodDark}`,
                 }}>
                   <span style={{ fontSize: 12 }}>{RIGHT_ICONS[r]}</span>
                 </div>
@@ -248,9 +284,9 @@ const Game = () => {
 
         {/* Stats + exit */}
         <div style={S.statsBox}>
-          <div style={S.chip}>🏅 {badges.length} Badges</div>
-          <div style={S.chip}>🗺️ {progress?.totalZonesCompleted || 0} / 5</div>
-          <button style={S.exitBtn} onClick={logout}>← Exit</button>
+          <div style={S.chip}>🏅 {badges.length}</div>
+          <div style={S.chip}>🗺️ {progress?.totalZonesCompleted || 0}/5</div>
+          <button style={S.exitBtn} onClick={logout}>◄ Exit</button>
         </div>
       </header>
 
@@ -259,76 +295,110 @@ const Game = () => {
 
         {/* LEFT PANEL */}
         <aside style={S.panel}>
-          <SectionLabel icon="🏆">Top Players</SectionLabel>
-          {leaderboard.length === 0
-            ? <div style={S.empty}>No players yet!<br />Be the first 🌟</div>
-            : leaderboard.slice(0, 8).map((e, i) => (
-              <div key={i} style={{
-                ...S.lbRow,
-                ...(e.username === user?.username ? S.lbRowMe : {}),
-              }}>
-                <span style={S.rank}>
-                  {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
-                </span>
-                <div style={{ ...S.lbAvatar, background: `hsl(${i * 47}, 65%, 52%)` }}>
-                  {e.username.charAt(0).toUpperCase()}
+          <div style={S.panelHead}>
+            <span style={S.panelDiamond}>◆</span>
+            <span>Top Heroes</span>
+            <span style={S.panelDiamond}>◆</span>
+          </div>
+          <div style={S.panelBody}>
+            {leaderboard.length === 0
+              ? <div style={S.empty}>No players yet!<br />Be the first 🌟</div>
+              : leaderboard.slice(0, 8).map((e, i) => (
+                <div key={i} style={{
+                  ...S.lbRow,
+                  ...(e.username === user?.username ? S.lbRowMe : {}),
+                }}>
+                  <span style={S.rank}>
+                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
+                  </span>
+                  <div style={{ ...S.lbAvatar, background: `hsl(${i * 47}, 55%, 40%)` }}>
+                    {e.username.charAt(0).toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={S.lbName}>{e.username}</div>
+                    <div style={S.lbSub}>{e.xp} XP · Lv {e.level}</div>
+                  </div>
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={S.lbName}>{e.username}</div>
-                  <div style={S.lbSub}>{e.xp} XP · Lv {e.level}</div>
-                </div>
-              </div>
-            ))
-          }
+              ))
+            }
+          </div>
         </aside>
 
         {/* ── CANVAS ──────────────────────────────────────── */}
         <div style={S.canvasWrap}>
-          <canvas ref={canvasRef} style={S.canvas} />
-          <div style={S.hint}>
-            WASD / Arrow Keys to move &nbsp;•&nbsp; Walk into glowing zones to learn your rights
+          <div style={S.canvasParchment}>
+            <canvas ref={canvasRef} style={S.canvas} />
+            <div style={S.hint}>PRESS ARROW KEYS TO EXPLORE THE REALM</div>
+            
+            {/* Wargroove Dialogue UI */}
+            {dialogue && (
+              <div style={S.dialogueWrapper}>
+                <div style={S.dialogueNamePlate}>
+                  <span style={{color:'#a3aebb'}}>⚔️</span> {dialogue.name}
+                </div>
+                <div style={S.dialogueBox}>
+                  <p style={S.dialogueText}>{dialogue.text}</p>
+                  <button style={S.dialogueBtn} onClick={dialogue.onComplete}>
+                    Continue
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* RIGHT PANEL */}
         <aside style={S.panel}>
-          <SectionLabel icon="🏅">My Badges</SectionLabel>
-          {badges.length === 0
-            ? <div style={S.empty}>Complete zones<br />to earn badges 🎯</div>
-            : (
-              <div style={S.badgeGrid}>
-                {badges.map((b, i) => (
-                  <div key={i} style={S.badgeCard}>
-                    <div style={{ fontSize: 26 }}>{b.badgeId?.icon || '🏅'}</div>
-                    <div style={S.badgeName}>{b.badgeId?.name?.split(' ')[0]}</div>
-                  </div>
-                ))}
-              </div>
-            )
-          }
-
-          <Divider />
-          <SectionLabel icon="🗺️">Zone Status</SectionLabel>
-
-          {ALL_RIGHTS.map(right => {
-            const zone = zones.find(z => z.right === right);
-            const done = completedZones.some(z => z.zoneId?.right === right);
-            const col  = RIGHT_COLORS[right];
-            return (
-              <div key={right} style={S.zoneRow}>
-                <span style={{ fontSize: 18 }}>{RIGHT_ICONS[right]}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 11, color: done ? col : THEME.textMuted, fontWeight: done ? 700 : 400 }}>
-                    {zone?.name || right}
-                  </div>
-                  <div style={S.zoneBar}>
-                    <div style={{ height: '100%', width: done ? '100%' : '0%', background: col, borderRadius: 2, transition: 'width .8s ease' }} />
-                  </div>
+          <div style={S.panelHead}>
+            <span style={S.panelDiamond}>◆</span>
+            <span>My Badges</span>
+            <span style={S.panelDiamond}>◆</span>
+          </div>
+          <div style={S.panelBody}>
+            {badges.length === 0
+              ? <div style={S.empty}>Complete zones<br />to earn badges 🎯</div>
+              : (
+                <div style={S.badgeGrid}>
+                  {badges.map((b, i) => (
+                    <div key={i} style={S.badgeCard}>
+                      <div style={{ fontSize: 26 }}>{b.badgeId?.icon || '🏅'}</div>
+                      <div style={S.badgeName}>{b.badgeId?.name?.split(' ')[0]}</div>
+                    </div>
+                  ))}
                 </div>
-                <span style={{ fontSize: 14 }}>{done ? '✅' : '🔒'}</span>
-              </div>
-            );
-          })}
+              )
+            }
+
+            <RPGDivider />
+            <SectionLabel icon="🗺️">Zone Status</SectionLabel>
+
+            {ALL_RIGHTS.map(right => {
+              const zone = zones.find(z => z.right === right);
+              const done = completedZones.some(z => z.zoneId?.right === right);
+              const col  = RIGHT_COLORS[right];
+              return (
+                <div key={right} style={S.zoneRow}>
+                  <span style={{ fontSize: 18 }}>{RIGHT_ICONS[right]}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontSize: 14, fontFamily: "'VT323', monospace",
+                      color: done ? col : THEME.textMuted,
+                      fontWeight: done ? 700 : 400,
+                    }}>
+                      {zone?.name || right}
+                    </div>
+                    <div style={S.zoneBar}>
+                      <div style={{
+                        height: '100%', width: done ? '100%' : '0%',
+                        background: col, transition: 'width .8s ease',
+                      }} />
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 14 }}>{done ? '✅' : '🔒'}</span>
+                </div>
+              );
+            })}
+          </div>
         </aside>
       </div>
 
@@ -337,63 +407,91 @@ const Game = () => {
         <div style={S.overlay}>
           <div style={S.modal}>
             {/* Modal header */}
-            <div style={S.modalHead}>
-              <span style={{ fontSize: 48 }}>{RIGHT_ICONS[activeZone?.right]}</span>
-              <div>
-                <h2 style={{ color: zoneColor, margin: 0, fontSize: 22, fontFamily: 'Georgia, serif' }}>
-                  {activeZone?.name}
-                </h2>
-                <p style={{ color: THEME.textMuted, margin: '4px 0 0', fontSize: 13 }}>
-                  {activeZone?.description}
-                </p>
+            <div style={S.modalBanner}>
+              <span style={S.modalDiamond}>◆</span>
+              <span>{activeZone?.name}</span>
+              <span style={S.modalDiamond}>◆</span>
+            </div>
+            <div style={S.modalBody}>
+              <div style={S.modalHead}>
+                <span style={{ fontSize: 44 }}>{RIGHT_ICONS[activeZone?.right]}</span>
+                <div>
+                  <h2 style={{
+                    color: zoneColor, margin: 0, fontSize: 24,
+                    fontFamily: "'VT323', monospace",
+                  }}>
+                    {activeZone?.name}
+                  </h2>
+                  <p style={{ color: THEME.textMuted, margin: '4px 0 0', fontSize: 18, fontFamily: "'VT323', monospace" }}>
+                    {activeZone?.description}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {/* Progress dots */}
-            <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
-              {activeZone?.questions.map((_, i) => (
-                <div key={i} style={{
-                  width: 10, height: 10, borderRadius: '50%', transition: 'background .3s',
-                  background: i < quizIndex ? THEME.green : i === quizIndex ? THEME.gold : 'rgba(255,255,255,0.12)',
-                }} />
-              ))}
-            </div>
-
-            {/* Question */}
-            <div style={S.questionBox}>
-              <p style={{ color: THEME.text, fontSize: 18, lineHeight: 1.65, margin: 0, fontWeight: 500 }}>
-                {quizQuestion.question}
-              </p>
-            </div>
-
-            {/* Options / Feedback */}
-            {!feedback ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {quizQuestion.options.map((opt, i) => (
-                  <button key={i} style={S.optionBtn} onClick={() => handleAnswer(i)}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.18)'; e.currentTarget.style.borderColor = THEME.purple; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = THEME.bgCard; e.currentTarget.style.borderColor = THEME.border; }}
-                  >
-                    <span style={S.optLetter}>{String.fromCharCode(65 + i)}</span>
-                    <span style={{ color: THEME.text }}>{opt}</span>
-                  </button>
+              {/* Progress dots */}
+              <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+                {activeZone?.questions.map((_, i) => (
+                  <div key={i} style={{
+                    width: 12, height: 12,
+                    border: '2px solid ' + THEME.woodDark,
+                    transition: 'background .3s',
+                    background: i < quizIndex ? THEME.greenLight : i === quizIndex ? THEME.gold : THEME.parchDark,
+                  }} />
                 ))}
               </div>
-            ) : (
-              <div style={{
-                ...S.feedbackBox,
-                borderColor:  feedback.correct ? THEME.green  : THEME.red,
-                background:   feedback.correct ? 'rgba(52,211,153,0.07)' : 'rgba(248,113,113,0.07)',
-              }}>
-                <div style={{ fontSize: 40 }}>{feedback.correct ? '✅' : '❌'}</div>
-                <div style={{ fontWeight: 700, fontSize: 18, color: feedback.correct ? THEME.green : THEME.red, margin: '10px 0 6px' }}>
-                  {feedback.correct ? 'Correct!' : 'Not quite!'}
-                </div>
-                <p style={{ color: THEME.textDim, fontSize: 14, lineHeight: 1.6, margin: 0 }}>
-                  {feedback.explanation}
+
+              {/* Question */}
+              <div style={S.questionBox}>
+                <p style={{
+                  color: THEME.text, fontSize: 22, lineHeight: 1.5, margin: 0,
+                  fontFamily: "'VT323', monospace",
+                }}>
+                  {quizQuestion.question}
                 </p>
               </div>
-            )}
+
+              {/* Options / Feedback */}
+              {!feedback ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {quizQuestion.options.map((opt, i) => (
+                    <button key={i} style={S.optionBtn} onClick={() => handleAnswer(i)}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = 'linear-gradient(180deg, #e8c252, #c19a49)';
+                        e.currentTarget.style.borderColor = THEME.borderBright;
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = 'rgba(193,154,73,0.15)';
+                        e.currentTarget.style.borderColor = THEME.border;
+                      }}
+                    >
+                      <span style={S.optLetter}>{String.fromCharCode(65 + i)}</span>
+                      <span style={{ color: THEME.text, fontFamily: "'VT323', monospace", fontSize: 20 }}>{opt}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div style={{
+                  ...S.feedbackBox,
+                  borderColor: feedback.correct ? THEME.greenLight : THEME.redLight,
+                  background:  feedback.correct ? 'rgba(45,90,39,0.1)' : 'rgba(139,37,0,0.1)',
+                }}>
+                  <div style={{ fontSize: 40 }}>{feedback.correct ? '✅' : '❌'}</div>
+                  <div style={{
+                    fontFamily: "'Press Start 2P', monospace", fontSize: 10,
+                    color: feedback.correct ? THEME.greenLight : THEME.redLight,
+                    margin: '10px 0 6px',
+                  }}>
+                    {feedback.correct ? 'Correct!' : 'Not quite!'}
+                  </div>
+                  <p style={{
+                    color: THEME.textMuted, fontSize: 18, lineHeight: 1.5, margin: 0,
+                    fontFamily: "'VT323', monospace",
+                  }}>
+                    {feedback.explanation}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -401,32 +499,55 @@ const Game = () => {
       {/* ── QUIZ DONE ───────────────────────────────────────── */}
       {quizDone && (
         <div style={S.overlay}>
-          <div style={{ ...S.modal, textAlign: 'center' }}>
-            <div style={{ fontSize: 72, marginBottom: 8 }}>🎉</div>
-            <h2 style={{ color: THEME.gold, fontSize: 30, margin: '0 0 8px', fontFamily: 'Georgia, serif' }}>
-              Zone Complete!
-            </h2>
-            <p style={{ color: THEME.textDim, fontSize: 15, marginBottom: 20 }}>
-              You answered {quizScore} of {activeZone?.questions.length} correctly
-            </p>
-            <div style={S.xpReward}>
-              <span style={{ fontSize: 28 }}>⭐</span>
-              <span style={{ fontSize: 28, color: THEME.gold, fontWeight: 800 }}>
-                +{activeZone?.xpReward} XP
-              </span>
+          <div style={S.modal}>
+            <div style={S.modalBanner}>
+              <span style={S.modalDiamond}>◆</span>
+              <span>Zone Complete!</span>
+              <span style={S.modalDiamond}>◆</span>
             </div>
-            {badgePopup && (
-              <div style={S.badgeUnlock}>
-                <span style={{ fontSize: 36 }}>{badgePopup.icon}</span>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ color: THEME.gold, fontWeight: 700, fontSize: 14 }}>🎊 Badge Unlocked!</div>
-                  <div style={{ color: THEME.textDim, fontSize: 13, marginTop: 3 }}>{badgePopup.name}</div>
-                </div>
+            <div style={{ ...S.modalBody, textAlign: 'center' }}>
+              <div style={{ fontSize: 72, marginBottom: 8, animation: 'rpgBounce 0.6s ease-out' }}>🎉</div>
+              <h2 style={{
+                fontFamily: "'Press Start 2P', monospace", fontSize: 14,
+                color: THEME.gold, margin: '0 0 8px',
+                textShadow: '2px 2px 0 rgba(0,0,0,0.2)',
+              }}>
+                Quest Complete!
+              </h2>
+              <p style={{
+                color: THEME.textMuted, fontSize: 20, marginBottom: 16,
+                fontFamily: "'VT323', monospace",
+              }}>
+                You answered {quizScore} of {activeZone?.questions.length} correctly
+              </p>
+              <div style={S.xpReward}>
+                <span style={{ fontSize: 28 }}>⭐</span>
+                <span style={{
+                  fontFamily: "'Press Start 2P', monospace", fontSize: 14,
+                  color: THEME.gold,
+                }}>
+                  +{activeZone?.xpReward} XP
+                </span>
               </div>
-            )}
-            <button style={S.continueBtn} onClick={() => { setBadgePopup(null); closeQuiz(); }}>
-              Continue Exploring →
-            </button>
+              {badgePopup && (
+                <div style={S.badgeUnlock}>
+                  <span style={{ fontSize: 36 }}>{badgePopup.icon}</span>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{
+                      fontFamily: "'Press Start 2P', monospace", fontSize: 8,
+                      color: THEME.gold,
+                    }}>🎊 Badge Unlocked!</div>
+                    <div style={{
+                      color: THEME.textMuted, fontSize: 18, marginTop: 3,
+                      fontFamily: "'VT323', monospace",
+                    }}>{badgePopup.name}</div>
+                  </div>
+                </div>
+              )}
+              <button style={S.continueBtn} onClick={() => { setBadgePopup(null); closeQuiz(); }}>
+                Continue Exploring →
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -441,70 +562,87 @@ const S = {
   wrapper: {
     display: 'flex', flexDirection: 'column',
     width: '100vw', height: '100vh',
-    background: THEME.bg, overflow: 'hidden', color: THEME.text,
-    fontFamily: "'Segoe UI', system-ui, sans-serif",
+    background: 'linear-gradient(180deg, #87CEEB 0%, #4a90d9 35%, #2c5f99 70%, #1a3a6a 100%)',
+    overflow: 'hidden', color: THEME.text,
+    fontFamily: "'VT323', monospace",
   },
 
   /* Top bar */
   topBar: {
-    display: 'flex', alignItems: 'center', gap: 20,
-    padding: '8px 20px', flexShrink: 0,
-    background: `linear-gradient(90deg, #110c22 0%, ${THEME.bgMid} 100%)`,
-    borderBottom: `1px solid ${THEME.border}`,
-    boxShadow: '0 1px 24px rgba(0,0,0,0.6)',
+    display: 'flex', alignItems: 'center', gap: 16,
+    padding: '6px 16px', flexShrink: 0,
+    background: 'linear-gradient(180deg, #3d2b1f 0%, #5c3d28 50%, #3d2b1f 100%)',
+    borderBottom: '4px solid #2a1a0e',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.08)',
   },
-  profileBox: { display: 'flex', alignItems: 'center', gap: 10, minWidth: 210 },
+  profileBox: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 190 },
   avatar: {
-    width: 42, height: 42, borderRadius: '50%',
-    background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+    width: 38, height: 38,
+    background: 'linear-gradient(180deg, #e8c252, #8b6914)',
+    border: '2px solid #3d2b1f',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontWeight: 800, fontSize: 18, color: '#fff', flexShrink: 0,
-    boxShadow: '0 0 14px rgba(139,92,246,0.55)',
+    fontFamily: "'Press Start 2P', monospace", fontSize: 14, color: '#3d2b1f',
+    flexShrink: 0, boxShadow: '2px 2px 0 rgba(0,0,0,0.4)',
   },
-  username: { fontWeight: 700, fontSize: 15, color: THEME.purpleLight },
-  roleTag:  { fontSize: 10, color: THEME.textMuted, marginTop: 2, letterSpacing: '0.06em' },
+  username: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: 8,
+    color: THEME.parchLight,
+  },
+  roleTag: {
+    fontFamily: "'VT323', monospace", fontSize: 14,
+    color: THEME.gold, marginTop: 1,
+  },
   levelPill: {
-    background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-    color: '#fff', padding: '3px 10px', borderRadius: 20,
-    fontWeight: 700, fontSize: 12,
-    boxShadow: '0 0 10px rgba(139,92,246,0.45)',
+    fontFamily: "'Press Start 2P', monospace", fontSize: 8,
+    background: 'linear-gradient(180deg, #e8c252, #c19a49)',
+    border: '2px solid #8b6914', color: '#3d2b1f',
+    padding: '3px 10px',
+    boxShadow: '2px 2px 0 rgba(0,0,0,0.3)',
   },
 
-  xpBox: { flex: 1, maxWidth: 500 },
-  xpRow: { display: 'flex', justifyContent: 'space-between', marginBottom: 5 },
-  xpLabel: { color: THEME.gold, fontWeight: 700, fontSize: 14 },
-  xpNext:  { color: THEME.textMuted, fontSize: 12 },
+  xpBox: { flex: 1, maxWidth: 450 },
+  xpRow: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 },
+  xpLabel: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: 8,
+    color: THEME.gold,
+  },
+  xpNext: {
+    fontFamily: "'VT323', monospace", fontSize: 16,
+    color: THEME.textDim,
+  },
   xpTrack: {
-    height: 10, borderRadius: 5, overflow: 'hidden', position: 'relative',
-    background: 'rgba(255,255,255,0.07)',
-    border: `1px solid rgba(139,92,246,0.2)`,
+    height: 12, overflow: 'hidden', position: 'relative',
+    background: THEME.parchDark,
+    border: '2px solid #3d2b1f',
+    boxShadow: 'inset 2px 2px 4px rgba(0,0,0,0.3)',
   },
   xpFill: {
-    position: 'absolute', height: '100%', borderRadius: 5,
-    background: 'linear-gradient(90deg, #8b5cf6, #2dd4bf)',
+    position: 'absolute', height: '100%',
+    background: 'linear-gradient(180deg, #e8c252 0%, #c19a49 50%, #8b6914 100%)',
+    boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.3)',
     transition: 'width .7s ease',
   },
-  xpSheen: {
-    position: 'absolute', height: '100%', borderRadius: 5,
-    background: 'rgba(255,255,255,0.15)', filter: 'blur(4px)',
-    transition: 'width .7s ease',
-  },
-  dotRow: { display: 'flex', gap: 8, marginTop: 7, justifyContent: 'center' },
+  dotRow: { display: 'flex', gap: 6, marginTop: 5, justifyContent: 'center' },
   dot: {
-    width: 26, height: 26, borderRadius: '50%',
+    width: 24, height: 24,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     transition: 'all .3s',
   },
 
-  statsBox: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 210, justifyContent: 'flex-end' },
+  statsBox: { display: 'flex', alignItems: 'center', gap: 6, minWidth: 190, justifyContent: 'flex-end' },
   chip: {
-    background: 'rgba(255,255,255,0.05)', border: `1px solid ${THEME.border}`,
-    padding: '5px 12px', borderRadius: 20, fontSize: 12, color: THEME.textDim,
+    fontFamily: "'Press Start 2P', monospace", fontSize: 7,
+    background: 'linear-gradient(180deg, #f5e6c8, #e8d5a3)',
+    border: '2px solid #3d2b1f', color: '#3d2b1f',
+    padding: '4px 10px',
+    boxShadow: '1px 1px 0 rgba(0,0,0,0.3)',
   },
   exitBtn: {
-    background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.4)',
-    color: '#f87171', padding: '6px 14px', borderRadius: 8,
-    cursor: 'pointer', fontSize: 12, fontWeight: 600,
+    fontFamily: "'Press Start 2P', monospace", fontSize: 7,
+    background: 'linear-gradient(180deg, #c44, #922)',
+    border: '2px solid #611', color: '#fdd',
+    padding: '5px 12px', cursor: 'pointer',
+    boxShadow: '2px 2px 0 rgba(0,0,0,0.3)',
   },
 
   /* Main row */
@@ -513,114 +651,210 @@ const S = {
   /* Side panels */
   panel: {
     width: 200, flexShrink: 0,
-    background: `linear-gradient(180deg, #0f0a1e 0%, #110c22 100%)`,
-    borderRight: `1px solid ${THEME.border}`,
-    padding: '14px 12px', overflowY: 'auto',
+    background: 'linear-gradient(180deg, #f5e6c8 0%, #e8d5a3 50%, #c4a96a 100%)',
+    borderRight: '3px solid #3d2b1f',
+    borderLeft: '3px solid #3d2b1f',
+    display: 'flex', flexDirection: 'column',
   },
+  panelHead: {
+    background: 'linear-gradient(180deg, #3d2b1f, #5c3d28, #3d2b1f)',
+    padding: '6px 10px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+    borderBottom: '3px solid #2a1a0e',
+    fontFamily: "'Press Start 2P', monospace", fontSize: 7,
+    color: THEME.parchLight, textShadow: '1px 1px 0 #2a1a0e',
+    flexShrink: 0,
+  },
+  panelDiamond: { color: THEME.gold, fontSize: 8 },
+  panelBody: { padding: '10px 10px', overflowY: 'auto', flex: 1 },
 
-  empty: { color: THEME.textMuted, fontSize: 12, textAlign: 'center', padding: '18px 0', lineHeight: 1.9 },
+  empty: { color: THEME.textMuted, fontSize: 16, textAlign: 'center', padding: '18px 0', lineHeight: 1.6, fontFamily: "'VT323', monospace" },
 
   lbRow: {
-    display: 'flex', alignItems: 'center', gap: 8, padding: '8px 8px',
-    borderRadius: 10, marginBottom: 5,
-    background: THEME.bgCard, border: `1px solid rgba(255,255,255,0.04)`,
+    display: 'flex', alignItems: 'center', gap: 6, padding: '6px 6px',
+    marginBottom: 4,
+    background: 'rgba(193,154,73,0.12)',
+    border: '2px solid rgba(61,43,31,0.2)',
   },
   lbRowMe: {
-    background: 'rgba(139,92,246,0.12)',
-    border: `1px solid rgba(139,92,246,0.4)`,
-    boxShadow: '0 0 10px rgba(139,92,246,0.15)',
+    background: 'linear-gradient(180deg, rgba(232,194,82,0.3), rgba(193,154,73,0.3))',
+    border: '2px solid #8b6914',
+    boxShadow: '0 0 8px rgba(193,154,73,0.3)',
   },
-  rank:    { fontSize: 15, width: 24, textAlign: 'center', flexShrink: 0 },
-  lbAvatar:{
-    width: 28, height: 28, borderRadius: '50%',
+  rank: { fontSize: 14, width: 22, textAlign: 'center', flexShrink: 0 },
+  lbAvatar: {
+    width: 24, height: 24,
+    border: '2px solid #3d2b1f',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0,
+    fontFamily: "'Press Start 2P', monospace", fontSize: 8,
+    color: '#fff', flexShrink: 0,
   },
-  lbName: { fontSize: 12, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  lbSub:  { fontSize: 10, color: THEME.gold, marginTop: 1 },
+  lbName: {
+    fontFamily: "'VT323', monospace", fontSize: 16,
+    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+    color: THEME.text,
+  },
+  lbSub: {
+    fontFamily: "'VT323', monospace", fontSize: 14, color: THEME.gold,
+  },
 
-  badgeGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 },
+  badgeGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 },
   badgeCard: {
-    background: 'rgba(139,92,246,0.08)', border: `1px solid rgba(139,92,246,0.2)`,
-    borderRadius: 10, padding: '10px 4px', textAlign: 'center',
+    background: 'rgba(193,154,73,0.15)',
+    border: '2px solid rgba(61,43,31,0.2)',
+    padding: '8px 4px', textAlign: 'center',
   },
-  badgeName: { fontSize: 9, color: THEME.purpleLight, marginTop: 4, lineHeight: 1.3 },
+  badgeName: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: 5,
+    color: THEME.gold, marginTop: 4, lineHeight: 1.3,
+  },
 
   zoneRow: {
-    display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
-    padding: '7px 6px', background: THEME.bgCard, borderRadius: 8,
+    display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8,
+    padding: '6px 5px',
+    background: 'rgba(193,154,73,0.1)',
+    border: '1px solid rgba(61,43,31,0.15)',
   },
-  zoneBar: { height: 3, background: 'rgba(255,255,255,0.07)', borderRadius: 2, marginTop: 4, overflow: 'hidden' },
+  zoneBar: {
+    height: 4, background: THEME.parchDark,
+    border: '1px solid rgba(61,43,31,0.3)',
+    marginTop: 3, overflow: 'hidden',
+  },
 
-  /* Canvas area — KEY: flex:1 + minWidth:0 fills remaining space */
+  /* Canvas area */
   canvasWrap: {
     flex: 1, minWidth: 0,
     display: 'flex', flexDirection: 'column',
-    background: '#0a0814',
-    borderLeft: `1px solid ${THEME.border}`,
-    borderRight: `1px solid ${THEME.border}`,
+    background: 'url("/rpg-bg.png") center/cover no-repeat',
+    borderLeft: '3px solid #3d2b1f',
+    borderRight: '3px solid #3d2b1f',
+    padding: '24px 32px', // Framing it exactly like the screenshot
+    position: 'relative'
+  },
+  canvasParchment: {
+    flex: 1, minHeight: 0,
+    display: 'flex', flexDirection: 'column',
+    background: '#1a3a6a', // Fallback color
+    border: '4px solid #3d2b1f',
+    boxShadow: '8px 8px 0px rgba(0,0,0,0.4)',
+    position: 'relative'
   },
   canvas: {
-    display: 'block',
-    flex: 1,
-    minHeight: 0,
-    width: '100%',
-    imageRendering: 'pixelated',
+    display: 'block', flex: 1, minHeight: 0,
+    width: '100%', imageRendering: 'pixelated',
   },
   hint: {
-    color: 'rgba(255,255,255,0.2)', fontSize: 11,
-    textAlign: 'center', padding: '6px 0', flexShrink: 0,
-    background: 'rgba(0,0,0,0.35)', letterSpacing: '0.04em',
+    fontFamily: "'Press Start 2P', monospace", fontSize: 6,
+    color: 'rgba(245,230,200,0.4)',
+    textAlign: 'center', padding: '5px 0', flexShrink: 0,
+    background: 'rgba(61,43,31,0.6)', letterSpacing: '0.04em',
+  },
+
+  /* Dialogue Box Overlay */
+  dialogueWrapper: {
+    position: 'absolute', bottom: 10, left: 10, right: 10,
+    display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+    zIndex: 100, animation: 'rpgBounce 0.3s ease-out',
+  },
+  dialogueNamePlate: {
+    background: 'linear-gradient(180deg, #53455a, #3d3444)',
+    border: '3px solid #281d30',
+    borderBottom: 'none',
+    borderTopLeftRadius: 4, borderTopRightRadius: 4,
+    padding: '6px 16px',
+    fontFamily: "'Press Start 2P', monospace", fontSize: 10,
+    color: '#eaeaea', textShadow: '2px 2px 0 #000',
+    zIndex: 1, position: 'relative', left: 4, top: 3,
+  },
+  dialogueBox: {
+    background: 'linear-gradient(180deg, #fbf2cd, #e9d5a1)',
+    border: '4px solid #4a3e4d',
+    padding: '16px 20px', width: '100%', maxWidth: 700,
+    boxShadow: '6px 6px 0 rgba(0,0,0,0.5)',
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
+  },
+  dialogueText: {
+    margin: 0, fontFamily: "'VT323', monospace", fontSize: 24,
+    color: '#3d2b1f', lineHeight: 1.2,
+  },
+  dialogueBtn: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: 8,
+    background: 'linear-gradient(180deg, #e8c252, #c19a49)',
+    border: '2px solid #8b6914', color: '#3d2b1f',
+    padding: '8px 16px', cursor: 'pointer', flexShrink: 0,
+    boxShadow: '3px 3px 0 #3d2b1f', textShadow: '1px 1px 0 rgba(255,255,255,0.4)',
   },
 
   /* Overlay / Modal */
   overlay: {
     position: 'fixed', inset: 0,
-    background: 'rgba(5,3,15,0.88)',
+    background: 'rgba(26,14,4,0.85)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 200, backdropFilter: 'blur(6px)',
+    zIndex: 200,
   },
   modal: {
-    background: `linear-gradient(135deg, #130d25 0%, #0f0a1e 100%)`,
-    border: `1px solid rgba(139,92,246,0.3)`,
-    borderRadius: 20, padding: 28,
+    background: 'linear-gradient(180deg, #f5e6c8 0%, #e8d5a3 50%, #c4a96a 100%)',
+    border: '4px solid #3d2b1f',
     width: '90%', maxWidth: 480,
-    boxShadow: '0 0 60px rgba(139,92,246,0.15), 0 30px 60px rgba(0,0,0,0.8)',
+    boxShadow: '6px 6px 0 #2a1a0e, inset 2px 2px 0 rgba(255,255,255,0.3)',
+    animation: 'rpgFadeIn 0.3s ease-out',
   },
-  modalHead: { display: 'flex', gap: 14, alignItems: 'center', marginBottom: 20 },
+  modalBanner: {
+    background: 'linear-gradient(180deg, #3d2b1f, #5c3d28, #3d2b1f)',
+    padding: '10px 20px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+    borderBottom: '3px solid #2a1a0e',
+    fontFamily: "'Press Start 2P', monospace", fontSize: 10,
+    color: THEME.parchLight, textShadow: '2px 2px 0 #2a1a0e',
+  },
+  modalDiamond: { color: THEME.gold, fontSize: 10 },
+  modalBody: { padding: '20px 24px' },
+  modalHead: { display: 'flex', gap: 14, alignItems: 'center', marginBottom: 16 },
   questionBox: {
-    background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.06)`,
-    borderRadius: 12, padding: 16, marginBottom: 16,
+    background: 'rgba(193,154,73,0.15)',
+    border: '2px solid rgba(61,43,31,0.3)',
+    padding: 14, marginBottom: 14,
   },
   optionBtn: {
-    display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-    borderRadius: 10, border: `1px solid ${THEME.border}`,
-    background: THEME.bgCard, cursor: 'pointer', fontSize: 14, textAlign: 'left',
+    display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
+    border: '2px solid ' + THEME.border,
+    background: 'rgba(193,154,73,0.15)',
+    cursor: 'pointer', textAlign: 'left',
     transition: 'all .15s',
+    boxShadow: '2px 2px 0 rgba(0,0,0,0.15)',
   },
   optLetter: {
-    width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+    width: 28, height: 28, flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'rgba(139,92,246,0.15)', color: THEME.purpleLight,
-    fontWeight: 700, fontSize: 13, border: `1px solid rgba(139,92,246,0.3)`,
+    background: 'linear-gradient(180deg, #e8c252, #c19a49)',
+    border: '2px solid #8b6914',
+    fontFamily: "'Press Start 2P', monospace", fontSize: 9,
+    color: '#3d2b1f',
   },
-  feedbackBox: { border: '1px solid', borderRadius: 14, padding: 22, textAlign: 'center' },
+  feedbackBox: {
+    border: '3px solid', padding: 18, textAlign: 'center',
+  },
   xpReward: {
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-    margin: '16px 0',
-    background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)',
-    borderRadius: 12, padding: 14,
+    margin: '14px 0',
+    background: 'rgba(193,154,73,0.2)',
+    border: '2px solid rgba(139,105,20,0.4)',
+    padding: 12,
   },
   badgeUnlock: {
     display: 'flex', alignItems: 'center', gap: 12,
-    background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.2)',
-    borderRadius: 12, padding: 12, margin: '10px 0', textAlign: 'left',
+    background: 'rgba(193,154,73,0.15)',
+    border: '2px solid rgba(139,105,20,0.3)',
+    padding: 10, margin: '10px 0', textAlign: 'left',
   },
   continueBtn: {
-    width: '100%', padding: 14, borderRadius: 12, border: 'none',
-    background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-    color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer',
-    marginTop: 10, boxShadow: '0 0 20px rgba(139,92,246,0.4)',
+    width: '100%', padding: 14, border: '3px solid #8b6914',
+    background: 'linear-gradient(180deg, #e8c252 0%, #c19a49 50%, #8b6914 100%)',
+    color: '#3d2b1f',
+    fontFamily: "'Press Start 2P', monospace", fontSize: 10,
+    cursor: 'pointer', marginTop: 10,
+    boxShadow: '3px 3px 0 #3d2b1f',
+    textShadow: '0 1px 0 rgba(255,255,255,0.3)',
     letterSpacing: '0.03em',
   },
 };

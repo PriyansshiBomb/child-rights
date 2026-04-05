@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { getChildProgress } from '../api/gameAPI';
 import axios from 'axios';
+import '../App.css';
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -18,7 +19,6 @@ const ParentDashboard = () => {
     setSearchError('');
     setLoading(true);
     try {
-      // Search by email
       const res = await axios.get(`${BASE_URL}/auth/find?email=${childEmail}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -53,8 +53,8 @@ const ParentDashboard = () => {
   };
 
   const rightColors = {
-    education: '#4FC3F7', food: '#81C784',
-    safety: '#EF5350', health: '#AB47BC', play: '#FFB74D'
+    education: '#4a90d9', food: '#5cb85c',
+    safety: '#e67e22', health: '#e74c8a', play: '#9b59b6'
   };
   const rightIcons = {
     education: '📚', food: '🥗', safety: '🛡️', health: '❤️', play: '🎮'
@@ -62,35 +62,46 @@ const ParentDashboard = () => {
 
   return (
     <div style={styles.container}>
+      {/* Header */}
       <div style={styles.header}>
-        <h1 style={styles.title}>👨‍👩‍👧 Parent Dashboard</h1>
+        <div style={styles.titleRow}>
+          <span style={styles.titleDiamond}>◆</span>
+          <h1 style={styles.title}>👨‍👩‍👧 Parent Dashboard</h1>
+          <span style={styles.titleDiamond}>◆</span>
+        </div>
         <div style={styles.headerRight}>
-          <span style={styles.parentName}>Welcome, {user?.username}</span>
-          <button style={styles.logoutBtn} onClick={logout}>Logout</button>
+          <span style={styles.parentName}>⚔️ {user?.username}</span>
+          <button style={styles.logoutBtn} onClick={logout}>Exit ✕</button>
         </div>
       </div>
 
       <div style={styles.content}>
-        {/* Search child */}
+        {/* Search card */}
         <div style={styles.searchCard}>
-          <h2 style={styles.sectionTitle}>🔍 Find Your Child's Account</h2>
-          <p style={styles.hint}>Enter your child's registered email to view their progress</p>
-          <div style={styles.searchRow}>
-            <input
-              style={styles.input}
-              placeholder="Child's email address"
-              value={childEmail}
-              onChange={e => setChildEmail(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && searchChild()}
-            />
-            <button style={styles.searchBtn} onClick={searchChild} disabled={loading}>
-              {loading ? '...' : 'View Progress'}
-            </button>
+          <div style={styles.searchHeader}>
+            <span style={styles.searchHeaderDiamond}>◆</span>
+            <span style={styles.searchHeaderText}>🔍 Find Your Child's Account</span>
+            <span style={styles.searchHeaderDiamond}>◆</span>
           </div>
-          {searchError && <p style={styles.error}>{searchError}</p>}
+          <div style={styles.searchInner}>
+            <p style={styles.hint}>Enter your child's registered email to view their progress</p>
+            <div style={styles.searchRow}>
+              <input
+                style={styles.input}
+                placeholder="Child's email address"
+                value={childEmail}
+                onChange={e => setChildEmail(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && searchChild()}
+              />
+              <button style={styles.searchBtn} onClick={searchChild} disabled={loading}>
+                {loading ? '⏳' : '🔍 Search'}
+              </button>
+            </div>
+            {searchError && <p style={styles.error}>⚠ {searchError}</p>}
+          </div>
         </div>
 
-        {/* Child list tabs */}
+        {/* Child tabs */}
         {children.length > 0 && (
           <div style={styles.childTabs}>
             {children.map(child => (
@@ -124,61 +135,84 @@ const ParentDashboard = () => {
 
             {/* XP Progress bar */}
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}>📈 Learning Progress</h3>
-              <div style={styles.xpBarWrap}>
-                <div style={styles.xpBarTrack}>
-                  <div style={{
-                    ...styles.xpBarFill,
-                    width: `${Math.min(100, ((progress.xp || 0) % 100))}%`
-                  }} />
+              <div style={styles.cardHeader}>
+                <span style={styles.cardHeaderDiamond}>◆</span>
+                <span>📈 Learning Progress</span>
+                <span style={styles.cardHeaderDiamond}>◆</span>
+              </div>
+              <div style={styles.cardBody}>
+                <div style={styles.xpBarWrap}>
+                  <div style={styles.xpBarTrack}>
+                    <div style={{
+                      ...styles.xpBarFill,
+                      width: `${Math.min(100, ((progress.xp || 0) % 100))}%`
+                    }} />
+                  </div>
+                  <span style={styles.xpBarLabel}>
+                    ✦ {progress.xp || 0} XP • Level {progress.level || 1}
+                  </span>
                 </div>
-                <span style={styles.xpBarLabel}>{progress.xp || 0} XP • Level {progress.level || 1}</span>
               </div>
             </div>
 
             {/* Zones completed */}
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}>🗺️ Rights Zones Explored</h3>
-              {progress.zonesCompleted?.length === 0 ? (
-                <p style={styles.emptyText}>No zones completed yet — encourage them to explore!</p>
-              ) : (
-                <div style={styles.zoneList}>
-                  {progress.zonesCompleted?.map((z, i) => (
-                    <div key={i} style={styles.zoneItem}>
-                      <span style={styles.zoneIcon}>
-                        {rightIcons[z.zoneId?.right] || '🌍'}
-                      </span>
-                      <div style={styles.zoneInfo}>
-                        <div style={{ color: rightColors[z.zoneId?.right] || '#FFD700', fontWeight: 'bold' }}>
-                          {z.zoneId?.name || 'Unknown Zone'}
+              <div style={styles.cardHeader}>
+                <span style={styles.cardHeaderDiamond}>◆</span>
+                <span>🗺️ Rights Zones Explored</span>
+                <span style={styles.cardHeaderDiamond}>◆</span>
+              </div>
+              <div style={styles.cardBody}>
+                {progress.zonesCompleted?.length === 0 ? (
+                  <p style={styles.emptyText}>No zones completed yet — encourage them to explore!</p>
+                ) : (
+                  <div style={styles.zoneList}>
+                    {progress.zonesCompleted?.map((z, i) => (
+                      <div key={i} style={styles.zoneItem}>
+                        <span style={styles.zoneIcon}>
+                          {rightIcons[z.zoneId?.right] || '🌍'}
+                        </span>
+                        <div style={styles.zoneInfo}>
+                          <div style={{
+                            color: rightColors[z.zoneId?.right] || '#c19a49',
+                            fontWeight: 'bold', fontSize: '20px',
+                          }}>
+                            {z.zoneId?.name || 'Unknown Zone'}
+                          </div>
+                          <div style={styles.zoneSubInfo}>
+                            Score: {z.score}% • {new Date(z.completedAt).toLocaleDateString()}
+                          </div>
                         </div>
-                        <div style={styles.zoneSubInfo}>
-                          Score: {z.score}% • {new Date(z.completedAt).toLocaleDateString()}
-                        </div>
+                        <div style={styles.zoneBadge}>✅</div>
                       </div>
-                      <div style={styles.zoneBadge}>✅</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Badges earned */}
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}>🏅 Badges Earned</h3>
-              {progress.badgesEarned?.length === 0 ? (
-                <p style={styles.emptyText}>No badges yet — zones unlock badges!</p>
-              ) : (
-                <div style={styles.badgeGrid}>
-                  {progress.badgesEarned?.map((b, i) => (
-                    <div key={i} style={styles.badgeItem}>
-                      <div style={styles.badgeIcon}>{b.badgeId?.icon || '🏅'}</div>
-                      <div style={styles.badgeName}>{b.badgeId?.name || 'Badge'}</div>
-                      <div style={styles.badgeDate}>{new Date(b.earnedAt).toLocaleDateString()}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div style={styles.cardHeader}>
+                <span style={styles.cardHeaderDiamond}>◆</span>
+                <span>🏅 Badges Earned</span>
+                <span style={styles.cardHeaderDiamond}>◆</span>
+              </div>
+              <div style={styles.cardBody}>
+                {progress.badgesEarned?.length === 0 ? (
+                  <p style={styles.emptyText}>No badges yet — zones unlock badges!</p>
+                ) : (
+                  <div style={styles.badgeGrid}>
+                    {progress.badgesEarned?.map((b, i) => (
+                      <div key={i} style={styles.badgeItem}>
+                        <div style={styles.badgeIcon}>{b.badgeId?.icon || '🏅'}</div>
+                        <div style={styles.badgeName}>{b.badgeId?.name || 'Badge'}</div>
+                        <div style={styles.badgeDate}>{new Date(b.earnedAt).toLocaleDateString()}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -188,47 +222,183 @@ const ParentDashboard = () => {
 };
 
 const styles = {
-  container: { minHeight: '100vh', background: '#1a1a2e', color: '#fff', overflow: 'auto' },
-  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 32px', borderBottom: '1px solid rgba(255,215,0,0.2)', background: 'rgba(0,0,0,0.4)' },
-  title: { color: '#FFD700', fontSize: '24px' },
-  headerRight: { display: 'flex', alignItems: 'center', gap: '16px' },
-  parentName: { color: '#aaa', fontSize: '14px' },
-  logoutBtn: { background: 'rgba(255,82,82,0.2)', border: '1px solid #ff5252', color: '#ff5252', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' },
-  content: { maxWidth: '800px', margin: '0 auto', padding: '30px 20px' },
-  searchCard: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,215,0,0.2)', borderRadius: '16px', padding: '24px', marginBottom: '24px' },
-  sectionTitle: { color: '#FFD700', fontSize: '18px', marginBottom: '8px' },
-  hint: { color: '#aaa', fontSize: '13px', marginBottom: '16px' },
-  searchRow: { display: 'flex', gap: '12px' },
-  input: { flex: 1, padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,215,0,0.3)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '15px', outline: 'none' },
-  searchBtn: { padding: '12px 24px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#1a1a2e', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' },
-  error: { color: '#ff5252', fontSize: '13px', marginTop: '8px' },
-  childTabs: { display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' },
-  childTab: { padding: '8px 20px', borderRadius: '20px', border: '1px solid rgba(255,215,0,0.3)', background: 'transparent', color: '#aaa', cursor: 'pointer', fontSize: '14px' },
-  childTabActive: { background: 'rgba(255,215,0,0.15)', color: '#FFD700', border: '1px solid #FFD700' },
-  progressSection: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  statsRow: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' },
-  statCard: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,215,0,0.15)', borderRadius: '14px', padding: '20px', textAlign: 'center' },
-  statIcon: { fontSize: '28px', marginBottom: '8px' },
-  statValue: { fontSize: '28px', fontWeight: 'bold', color: '#FFD700' },
-  statLabel: { color: '#aaa', fontSize: '12px', marginTop: '4px' },
-  card: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px' },
-  cardTitle: { color: '#FFD700', fontSize: '16px', marginBottom: '16px' },
+  container: {
+    minHeight: '100vh',
+    background: 'transparent',
+    color: '#3d2b1f', overflow: 'auto',
+    fontFamily: "'VT323', monospace",
+    position: 'relative',
+  },
+  header: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    padding: '12px 24px',
+    background: 'linear-gradient(180deg, #3d2b1f 0%, #5c3d28 50%, #3d2b1f 100%)',
+    borderBottom: '4px solid #2a1a0e',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.08)',
+    position: 'sticky', top: 0, zIndex: 100,
+  },
+  titleRow: { display: 'flex', alignItems: 'center', gap: '12px' },
+  title: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '12px',
+    color: '#f5e6c8', textShadow: '2px 2px 0 #2a1a0e', margin: 0,
+  },
+  titleDiamond: { color: '#c19a49', fontSize: '12px' },
+  headerRight: { display: 'flex', alignItems: 'center', gap: '12px' },
+  parentName: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    color: '#c19a49',
+  },
+  logoutBtn: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    padding: '8px 14px',
+    background: 'linear-gradient(180deg, #c44, #922)',
+    border: '2px solid #611', color: '#fdd',
+    cursor: 'pointer', boxShadow: '2px 2px 0 #2a1a0e',
+  },
+  content: {
+    maxWidth: '850px', margin: '0 auto', padding: '24px 20px 80px',
+    position: 'relative', zIndex: 2,
+  },
+
+  /* Search card */
+  searchCard: {
+    background: 'linear-gradient(180deg, #f5e6c8 0%, #e8d5a3 50%, #c4a96a 100%)',
+    border: '4px solid #3d2b1f',
+    boxShadow: '4px 4px 0px #2a1a0e, inset 2px 2px 0 rgba(255,255,255,0.3)',
+    marginBottom: '24px',
+    animation: 'rpgFadeIn 0.4s ease-out',
+  },
+  searchHeader: {
+    background: 'linear-gradient(180deg, #3d2b1f, #5c3d28, #3d2b1f)',
+    padding: '8px 16px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+    borderBottom: '3px solid #2a1a0e',
+    fontFamily: "'Press Start 2P', monospace", fontSize: '9px',
+    color: '#f5e6c8', textShadow: '1px 1px 0 #2a1a0e',
+  },
+  searchHeaderDiamond: { color: '#c19a49', fontSize: '10px' },
+  searchHeaderText: {},
+  searchInner: { padding: '16px 20px' },
+  hint: { color: '#7a6542', fontSize: '18px', marginBottom: '14px' },
+  searchRow: { display: 'flex', gap: '10px' },
+  input: {
+    flex: 1, padding: '10px 14px',
+    background: 'linear-gradient(180deg, #d4bc82, #c9b078)',
+    border: '2px solid #3d2b1f', color: '#3d2b1f', fontSize: '20px',
+    fontFamily: "'VT323', monospace",
+    boxShadow: 'inset 2px 2px 4px rgba(0,0,0,0.25)',
+    outline: 'none', boxSizing: 'border-box',
+  },
+  searchBtn: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    padding: '10px 18px',
+    background: 'linear-gradient(180deg, #e8c252, #c19a49, #8b6914)',
+    border: '3px solid #8b6914', color: '#3d2b1f',
+    cursor: 'pointer', boxShadow: '2px 2px 0 #3d2b1f',
+    whiteSpace: 'nowrap',
+  },
+  error: { color: '#8b2500', fontSize: '18px', marginTop: '8px' },
+
+  /* Child tabs */
+  childTabs: { display: 'flex', gap: '4px', marginBottom: '20px', flexWrap: 'wrap' },
+  childTab: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    padding: '8px 16px',
+    background: 'linear-gradient(180deg, #d4bc82, #c9b078)',
+    border: '2px solid #3d2b1f', color: '#7a6542',
+    cursor: 'pointer', boxShadow: '2px 2px 0 #2a1a0e',
+  },
+  childTabActive: {
+    background: 'linear-gradient(180deg, #e8c252, #c19a49)',
+    color: '#3d2b1f', borderColor: '#8b6914',
+    boxShadow: '2px 2px 0 #2a1a0e, 0 0 10px rgba(193,154,73,0.4)',
+  },
+
+  /* Progress */
+  progressSection: { display: 'flex', flexDirection: 'column', gap: '16px' },
+  statsRow: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' },
+  statCard: {
+    background: 'linear-gradient(180deg, #f5e6c8, #e8d5a3)',
+    border: '3px solid #3d2b1f', padding: '16px', textAlign: 'center',
+    boxShadow: '3px 3px 0 #2a1a0e, inset 1px 1px 0 rgba(255,255,255,0.3)',
+    animation: 'rpgFadeIn 0.4s ease-out',
+  },
+  statIcon: { fontSize: '28px', marginBottom: '6px' },
+  statValue: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '14px',
+    color: '#8b6914', margin: '4px 0',
+  },
+  statLabel: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '6px',
+    color: '#7a6542', textTransform: 'uppercase', letterSpacing: '1px',
+  },
+
+  /* Cards */
+  card: {
+    background: 'linear-gradient(180deg, #f5e6c8, #e8d5a3, #c4a96a)',
+    border: '4px solid #3d2b1f',
+    boxShadow: '4px 4px 0px #2a1a0e, inset 2px 2px 0 rgba(255,255,255,0.3)',
+    animation: 'rpgFadeIn 0.5s ease-out',
+  },
+  cardHeader: {
+    background: 'linear-gradient(180deg, #3d2b1f, #5c3d28, #3d2b1f)',
+    padding: '8px 16px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+    borderBottom: '3px solid #2a1a0e',
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    color: '#f5e6c8', textShadow: '1px 1px 0 #2a1a0e',
+  },
+  cardHeaderDiamond: { color: '#c19a49', fontSize: '10px' },
+  cardBody: { padding: '16px 20px' },
+
+  /* XP bar */
   xpBarWrap: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  xpBarTrack: { height: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px', overflow: 'hidden' },
-  xpBarFill: { height: '100%', background: 'linear-gradient(90deg, #FFD700, #FFA500)', borderRadius: '6px', transition: 'width 1s ease' },
-  xpBarLabel: { color: '#aaa', fontSize: '13px' },
-  zoneList: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  zoneItem: { display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '12px' },
+  xpBarTrack: {
+    height: '16px', background: '#c4a96a',
+    border: '2px solid #3d2b1f',
+    boxShadow: 'inset 2px 2px 4px rgba(0,0,0,0.3)',
+    overflow: 'hidden',
+  },
+  xpBarFill: {
+    height: '100%',
+    background: 'linear-gradient(180deg, #e8c252 0%, #c19a49 50%, #8b6914 100%)',
+    boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.3)',
+    transition: 'width 1s ease',
+  },
+  xpBarLabel: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    color: '#7a6542',
+  },
+
+  /* Zones */
+  zoneList: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  zoneItem: {
+    display: 'flex', alignItems: 'center', gap: '12px',
+    background: 'rgba(193,154,73,0.15)', border: '2px solid rgba(61,43,31,0.3)',
+    padding: '10px 12px',
+  },
   zoneIcon: { fontSize: '28px' },
   zoneInfo: { flex: 1 },
-  zoneSubInfo: { color: '#aaa', fontSize: '12px', marginTop: '3px' },
+  zoneSubInfo: { color: '#7a6542', fontSize: '16px', marginTop: '2px' },
   zoneBadge: { fontSize: '20px' },
-  emptyText: { color: '#aaa', fontSize: '14px' },
-  badgeGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px' },
-  badgeItem: { background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', borderRadius: '12px', padding: '16px', textAlign: 'center' },
-  badgeIcon: { fontSize: '32px', marginBottom: '8px' },
-  badgeName: { fontSize: '12px', fontWeight: 'bold', color: '#FFD700' },
-  badgeDate: { fontSize: '11px', color: '#aaa', marginTop: '4px' }
+  emptyText: { color: '#7a6542', fontSize: '20px' },
+
+  /* Badges */
+  badgeGrid: {
+    display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '10px',
+  },
+  badgeItem: {
+    background: 'rgba(193,154,73,0.2)', border: '2px solid rgba(61,43,31,0.3)',
+    padding: '12px', textAlign: 'center',
+  },
+  badgeIcon: { fontSize: '32px', marginBottom: '6px' },
+  badgeName: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '6px',
+    color: '#8b6914',
+  },
+  badgeDate: { fontSize: '16px', color: '#7a6542', marginTop: '4px' },
+
+  /* Ground */
 };
 
 export default ParentDashboard;

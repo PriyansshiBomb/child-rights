@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { registerUser } from '../api/authAPI';
 import { useAuth } from '../hooks/useAuth';
+import '../App.css';
 
 const Register = () => {
   const [form, setForm] = useState({ username: '', email: '', password: '', role: 'child' });
@@ -31,84 +32,205 @@ const Register = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <div style={styles.logo}>🌟</div>
-        <h1 style={styles.title}>Join Rights Quest</h1>
-        <p style={styles.subtitle}>Create your account and start learning!</p>
+        {/* Ornate top banner */}
+        <div style={styles.banner}>
+          <div style={styles.bannerDiamond}>◆</div>
+          <span style={styles.bannerText}>Join the Quest</span>
+          <div style={styles.bannerDiamond}>◆</div>
+        </div>
 
-        {error && <div style={styles.error}>{error}</div>}
+        <div style={styles.innerBorder}>
+          <div style={styles.logo}>🌟</div>
+          <p style={styles.subtitle}>Create your account and start learning!</p>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <input style={styles.input} name="username" placeholder="Username"
-            value={form.username} onChange={handleChange} required />
-          <input style={styles.input} type="email" name="email" placeholder="Email"
-            value={form.email} onChange={handleChange} required />
-          <input style={styles.input} type="password" name="password" placeholder="Password"
-            value={form.password} onChange={handleChange} required />
+          {error && <div style={styles.error}>⚠ {error}</div>}
 
-          <div style={styles.roleContainer}>
-            <p style={styles.roleLabel}>I am a:</p>
-            <div style={styles.roleButtons}>
-              {['child', 'parent'].map(role => (
-                <button key={role} type="button"
-                  style={{ ...styles.roleBtn, ...(form.role === role ? styles.roleBtnActive : {}) }}
-                  onClick={() => setForm({ ...form, role })}>
-                  {role === 'child' ? '🧒 Child' : '👨‍👩‍👧 Parent'}
-                </button>
-              ))}
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>🧙 Username</label>
+              <input style={styles.input} name="username" placeholder="Choose a username"
+                value={form.username} onChange={handleChange} required />
             </div>
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>📧 Email</label>
+              <input style={styles.input} type="email" name="email" placeholder="Enter your email"
+                value={form.email} onChange={handleChange} required />
+            </div>
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>🔑 Password</label>
+              <input style={styles.input} type="password" name="password" placeholder="Enter your password"
+                value={form.password} onChange={handleChange} required />
+            </div>
+
+            {/* Role selection as RPG class choice */}
+            <div style={styles.roleSection}>
+              <label style={styles.label}>⚔️ I am a</label>
+              <div style={styles.roleButtons}>
+                {['child', 'parent'].map(role => (
+                  <button key={role} type="button"
+                    style={{
+                      ...styles.roleBtn,
+                      ...(form.role === role ? styles.roleBtnActive : {}),
+                    }}
+                    onClick={() => setForm({ ...form, role })}
+                  >
+                    <span style={styles.roleIcon}>{role === 'child' ? '🧒' : '👨‍👩‍👧'}</span>
+                    <span style={styles.roleName}>{role === 'child' ? 'Child' : 'Parent'}</span>
+                    <span style={styles.roleDesc}>{role === 'child' ? 'Explorer' : 'Guardian'}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button style={styles.button} type="submit" disabled={loading}>
+              {loading ? '⏳ Creating...' : '🚀 Create Account'}
+            </button>
+          </form>
+
+          <div style={styles.divider}>
+            <span style={styles.dividerDiamond}>◆</span>
           </div>
 
-          <button style={styles.button} type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : '🚀 Create Account'}
-          </button>
-        </form>
-
-        <p style={styles.link}>
-          Already have an account?{' '}
-          <Link to="/login" style={styles.linkText}>Login</Link>
-        </p>
+          <p style={styles.link}>
+            Already have an account?{' '}
+            <Link to="/login" style={styles.linkText}>Login</Link>
+          </p>
+        </div>
       </div>
+
     </div>
   );
 };
 
 const styles = {
   container: {
-    height: '100vh', display: 'flex', alignItems: 'center',
-    justifyContent: 'center', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)'
+    height: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'transparent',
+    position: 'relative',
+    overflow: 'hidden',
+    fontFamily: "'VT323', monospace",
   },
   card: {
-    background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255,215,0,0.3)', borderRadius: '20px',
-    padding: '40px', width: '100%', maxWidth: '400px', textAlign: 'center'
+    background: 'linear-gradient(180deg, #f5e6c8 0%, #e8d5a3 50%, #c4a96a 100%)',
+    border: '4px solid #3d2b1f',
+    boxShadow: '6px 6px 0px #2a1a0e, inset 2px 2px 0px rgba(255,255,255,0.3), inset -2px -2px 0px rgba(0,0,0,0.15)',
+    width: '100%',
+    maxWidth: '440px',
+    textAlign: 'center',
+    position: 'relative',
+    zIndex: 10,
+    animation: 'rpgFadeIn 0.5s ease-out',
+    maxHeight: '92vh',
+    overflowY: 'auto',
   },
-  logo: { fontSize: '60px', marginBottom: '10px' },
-  title: { fontSize: '28px', color: '#FFD700', marginBottom: '8px', fontWeight: 'bold' },
-  subtitle: { color: '#aaa', marginBottom: '30px', fontSize: '14px' },
+  banner: {
+    background: 'linear-gradient(180deg, #3d2b1f 0%, #5c3d28 50%, #3d2b1f 100%)',
+    padding: '10px 24px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '12px',
+    borderBottom: '3px solid #2a1a0e',
+    boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -2px 0 rgba(0,0,0,0.3)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 2,
+  },
+  bannerText: {
+    fontFamily: "'Press Start 2P', monospace",
+    fontSize: '14px',
+    color: '#f5e6c8',
+    textShadow: '2px 2px 0 #2a1a0e',
+    letterSpacing: '1px',
+  },
+  bannerDiamond: { color: '#c19a49', fontSize: '12px' },
+  innerBorder: {
+    margin: '8px',
+    padding: '20px 24px',
+    border: '2px solid rgba(193, 154, 73, 0.5)',
+  },
+  logo: {
+    fontSize: '48px', marginBottom: '6px',
+    filter: 'drop-shadow(2px 2px 0 #3d2b1f)',
+    animation: 'rpgFloat 4s ease-in-out infinite',
+  },
+  subtitle: {
+    color: '#7a6542', marginBottom: '20px', fontSize: '18px',
+    fontFamily: "'VT323', monospace",
+  },
   error: {
-    background: 'rgba(255,82,82,0.2)', border: '1px solid #ff5252',
-    color: '#ff5252', padding: '10px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px'
+    background: 'rgba(139, 37, 0, 0.15)', border: '2px solid #8b2500',
+    color: '#8b2500', padding: '10px', marginBottom: '15px',
+    fontSize: '18px', fontFamily: "'VT323', monospace",
   },
-  form: { display: 'flex', flexDirection: 'column', gap: '15px' },
+  form: { display: 'flex', flexDirection: 'column', gap: '12px' },
+  fieldGroup: { textAlign: 'left' },
+  label: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '7px',
+    color: '#7a6542', textTransform: 'uppercase', letterSpacing: '1px',
+    marginBottom: '5px', display: 'block',
+  },
   input: {
-    padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,215,0,0.3)',
-    background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '16px', outline: 'none'
+    width: '100%', padding: '10px 14px',
+    background: 'linear-gradient(180deg, #d4bc82 0%, #c9b078 100%)',
+    border: '2px solid #3d2b1f', color: '#3d2b1f', fontSize: '20px',
+    fontFamily: "'VT323', monospace",
+    boxShadow: 'inset 2px 2px 4px rgba(0,0,0,0.25), inset -1px -1px 2px rgba(255,255,255,0.15)',
+    outline: 'none', boxSizing: 'border-box',
   },
-  roleContainer: { textAlign: 'left' },
-  roleLabel: { color: '#aaa', fontSize: '14px', marginBottom: '8px' },
-  roleButtons: { display: 'flex', gap: '10px' },
+  roleSection: { textAlign: 'left' },
+  roleButtons: { display: 'flex', gap: '10px', marginTop: '6px' },
   roleBtn: {
-    flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,215,0,0.3)',
-    background: 'transparent', color: '#fff', cursor: 'pointer', fontSize: '14px'
+    flex: 1, padding: '12px 8px',
+    background: 'linear-gradient(180deg, #d4bc82 0%, #c9b078 100%)',
+    border: '2px solid #3d2b1f', cursor: 'pointer',
+    boxShadow: '2px 2px 0px #3d2b1f',
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+    transition: 'all 0.15s',
   },
-  roleBtnActive: { background: 'rgba(255,215,0,0.2)', border: '1px solid #FFD700', color: '#FFD700' },
+  roleBtnActive: {
+    background: 'linear-gradient(180deg, #e8c252 0%, #c19a49 100%)',
+    border: '2px solid #8b6914',
+    boxShadow: '2px 2px 0px #3d2b1f, 0 0 12px rgba(193,154,73,0.5)',
+    transform: 'translateY(-2px)',
+  },
+  roleIcon: { fontSize: '28px' },
+  roleName: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '7px',
+    color: '#3d2b1f', textTransform: 'uppercase',
+  },
+  roleDesc: {
+    fontFamily: "'VT323', monospace", fontSize: '16px', color: '#7a6542',
+  },
   button: {
-    padding: '14px', borderRadius: '10px', border: 'none',
-    background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-    color: '#1a1a2e', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'
+    padding: '14px', border: '3px solid #8b6914',
+    background: 'linear-gradient(180deg, #e8c252 0%, #c19a49 50%, #8b6914 100%)',
+    color: '#3d2b1f', fontSize: '11px',
+    fontFamily: "'Press Start 2P', monospace", fontWeight: 'bold',
+    cursor: 'pointer', boxShadow: '3px 3px 0px #3d2b1f',
+    textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '6px',
+    transition: 'all 0.1s',
+    textShadow: '0 1px 0 rgba(255,255,255,0.3)',
   },
-  link: { marginTop: '20px', color: '#aaa', fontSize: '14px' },
-  linkText: { color: '#FFD700', textDecoration: 'none', fontWeight: 'bold' }
+  divider: {
+    height: '3px',
+    background: 'linear-gradient(90deg, transparent, #3d2b1f, transparent)',
+    margin: '18px 0 14px',
+    position: 'relative',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  dividerDiamond: {
+    background: '#e8d5a3', padding: '0 10px',
+    color: '#c19a49', fontSize: '10px', position: 'relative', top: '-1px',
+  },
+  link: { color: '#7a6542', fontSize: '18px', fontFamily: "'VT323', monospace" },
+  linkText: {
+    color: '#8b6914', textDecoration: 'none', fontWeight: 'bold',
+    borderBottom: '2px dashed #c19a49', paddingBottom: '1px',
+  },
 };
 
 export default Register;

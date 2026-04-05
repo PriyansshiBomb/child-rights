@@ -1,25 +1,117 @@
+/* ══════════════════════════════════════════════════════════
+   RIGHTS QUEST — RPG Pixel-Art Design System
+   ══════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+/* ── Design Tokens ─────────────────────────────────────── */
+:root {
+  /* Parchment / Panel */
+  --parchment:        #e8d5a3;
+  --parchment-light:  #f5e6c8;
+  --parchment-dark:   #c4a96a;
+  --parchment-deep:   #b8985a;
+
+  /* Wood / Border */
+  --wood-dark:        #3d2b1f;
+  --wood-mid:         #5c3d28;
+  --wood-light:       #7a5233;
+  --wood-border:      #2a1a0e;
+
+  /* Gold */
+  --gold:             #c19a49;
+  --gold-bright:      #e8c252;
+  --gold-dim:         #8b6914;
+  --gold-glow:        rgba(193, 154, 73, 0.5);
+
+  /* Text */
+  --text-dark:        #3d2b1f;
+  --text-mid:         #7a6542;
+  --text-light:       #b8985a;
+  --text-cream:       #f5e6c8;
+
+  /* Status */
+  --success:          #2d5a27;
+  --success-light:    #4a8c3f;
+  --error:            #8b2500;
+  --error-light:      #c0392b;
+
+  /* Rights colors */
+  --right-education:  #4a90d9;
+  --right-food:       #5cb85c;
+  --right-safety:     #e67e22;
+  --right-health:     #e74c8a;
+  --right-play:       #9b59b6;
+
+  /* Fonts */
+  --font-pixel:       'Press Start 2P', monospace;
+  --font-body:        'VT323', monospace;
+
+  /* Borders */
+  --border-thick:     4px solid var(--wood-dark);
+  --border-thin:      2px solid var(--wood-dark);
+  --border-gold:      3px solid var(--gold);
+  --border-ornate:    4px double var(--wood-dark);
+
+  /* Shadows */
+  --shadow-panel:     4px 4px 0px var(--wood-dark), 
+                      inset 2px 2px 0px rgba(255,255,255,0.2), 
+                      inset -2px -2px 0px rgba(0,0,0,0.15);
+  --shadow-inset:     inset 2px 2px 4px rgba(0,0,0,0.3),
+                      inset -1px -1px 2px rgba(255,255,255,0.15);
+  --shadow-button:    3px 3px 0px var(--wood-dark);
+  --shadow-glow:      0 0 15px var(--gold-glow);
+}
+
+/* ── Reset ─────────────────────────────────────────────── */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* ── Body — pixel-art background image ─────────────────── */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #1a1a2e;
-  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 18px;
+  color: var(--text-dark);
   overflow: hidden;
+  background-image: url('./rpg-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  image-rendering: pixelated;
 }
 
+/* ── Pixel Scrollbar ───────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a2e;
+  background: var(--parchment-dark);
+  border-left: var(--border-thin);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #FFD700;
-  border-radius: 3px;
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold-dim));
+  border: 2px solid var(--wood-dark);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-bright);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--parchment-dark);
+}
+
+/* ── Selection ─────────────────────────────────────────── */
+::selection {
+  background: var(--gold);
+  color: var(--wood-dark);
 }

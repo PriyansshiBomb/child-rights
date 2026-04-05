@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { getZones, updateZone } from '../api/gameAPI';
 import axios from 'axios';
+import '../App.css';
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -77,18 +78,23 @@ const AdminPanel = () => {
   };
 
   const rightColors = {
-    education: '#4FC3F7', food: '#81C784',
-    safety: '#EF5350', health: '#AB47BC', play: '#FFB74D'
+    education: '#4a90d9', food: '#5cb85c',
+    safety: '#e67e22', health: '#e74c8a', play: '#9b59b6'
   };
   const rightIcons = { education: '📚', food: '🥗', safety: '🛡️', health: '❤️', play: '🎮' };
 
   return (
     <div style={styles.container}>
+      {/* Header */}
       <div style={styles.header}>
-        <h1 style={styles.title}>⚙️ Admin Panel</h1>
+        <div style={styles.titleRow}>
+          <span style={styles.titleDiamond}>◆</span>
+          <h1 style={styles.title}>⚙️ Admin Panel</h1>
+          <span style={styles.titleDiamond}>◆</span>
+        </div>
         <div style={styles.headerRight}>
           <span style={styles.adminBadge}>ADMIN</span>
-          <button style={styles.logoutBtn} onClick={logout}>Logout</button>
+          <button style={styles.logoutBtn} onClick={logout}>Exit ✕</button>
         </div>
       </div>
 
@@ -111,114 +117,140 @@ const AdminPanel = () => {
 
         <div style={styles.mainGrid}>
           {/* Zone list */}
-          <div style={styles.zoneList}>
-            <h2 style={styles.panelTitle}>Rights Zones</h2>
-            {zones.map(zone => (
-              <div key={zone._id}
-                style={{ ...styles.zoneItem, ...(selectedZone?._id === zone._id ? styles.zoneItemActive : {}) }}
-                onClick={() => selectZone(zone)}>
-                <span style={{ fontSize: '24px' }}>{rightIcons[zone.right]}</span>
-                <div style={styles.zoneInfo}>
-                  <div style={{ color: rightColors[zone.right], fontWeight: 'bold', fontSize: '14px' }}>{zone.name}</div>
-                  <div style={styles.zoneSubInfo}>{zone.questions?.length || 0} questions • {zone.xpReward} XP</div>
+          <div style={styles.zoneListPanel}>
+            <div style={styles.panelHeader}>
+              <span style={styles.panelHeaderDiamond}>◆</span>
+              <span>Rights Zones</span>
+              <span style={styles.panelHeaderDiamond}>◆</span>
+            </div>
+            <div style={styles.zoneListInner}>
+              {zones.map(zone => (
+                <div key={zone._id}
+                  style={{ ...styles.zoneItem, ...(selectedZone?._id === zone._id ? styles.zoneItemActive : {}) }}
+                  onClick={() => selectZone(zone)}>
+                  <span style={{ fontSize: '24px' }}>{rightIcons[zone.right]}</span>
+                  <div style={styles.zoneInfo}>
+                    <div style={{
+                      color: rightColors[zone.right], fontWeight: 'bold', fontSize: '18px',
+                    }}>{zone.name}</div>
+                    <div style={styles.zoneSubInfo}>{zone.questions?.length || 0} questions • {zone.xpReward} XP</div>
+                  </div>
+                  <div style={{
+                    ...styles.activeDot,
+                    background: zone.isActive
+                      ? 'linear-gradient(180deg, #5cb85c, #2d5a27)'
+                      : 'linear-gradient(180deg, #c44, #822)',
+                    boxShadow: zone.isActive
+                      ? '0 0 6px rgba(92,184,92,0.5)'
+                      : '0 0 6px rgba(204,68,68,0.5)',
+                  }} />
                 </div>
-                <div style={{ ...styles.activeDot, background: zone.isActive ? '#00E676' : '#ff5252' }} />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Zone editor */}
-          <div style={styles.editor}>
-            {!selectedZone ? (
-              <div style={styles.selectPrompt}>
-                <div style={{ fontSize: '48px' }}>👈</div>
-                <p>Select a zone to edit</p>
-              </div>
-            ) : (
-              <>
-                <div style={styles.editorHeader}>
-                  <h2 style={{ color: rightColors[selectedZone.right], fontSize: '20px' }}>
-                    {rightIcons[selectedZone.right]} {selectedZone.name}
-                  </h2>
+          <div style={styles.editorPanel}>
+            <div style={styles.panelHeader}>
+              <span style={styles.panelHeaderDiamond}>◆</span>
+              <span>{selectedZone ? `${rightIcons[selectedZone.right]} ${selectedZone.name}` : 'Zone Editor'}</span>
+              <span style={styles.panelHeaderDiamond}>◆</span>
+            </div>
+            <div style={styles.editorInner}>
+              {!selectedZone ? (
+                <div style={styles.selectPrompt}>
+                  <div style={{ fontSize: '48px', marginBottom: '12px' }}>👈</div>
+                  <p style={{ fontSize: '20px', color: '#7a6542' }}>Select a zone to edit</p>
+                </div>
+              ) : (
+                <>
+                  {/* Editor actions */}
                   <div style={styles.editorActions}>
                     {saved && <span style={styles.savedMsg}>✅ Saved!</span>}
                     {!editMode
                       ? <button style={styles.editBtn} onClick={() => setEditMode(true)}>✏️ Edit</button>
                       : <>
                           <button style={styles.cancelBtn} onClick={() => { setEditMode(false); setEditData({ ...selectedZone }); }}>Cancel</button>
-                          <button style={styles.saveBtn} onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : '💾 Save'}</button>
+                          <button style={styles.saveBtn} onClick={handleSave} disabled={saving}>{saving ? '⏳...' : '💾 Save'}</button>
                         </>
                     }
                   </div>
-                </div>
 
-                {/* Zone settings */}
-                <div style={styles.settingsGrid}>
-                  <div style={styles.fieldGroup}>
-                    <label style={styles.label}>Zone Name</label>
-                    <input style={styles.input} value={editData.name || ''} disabled={!editMode}
-                      onChange={e => setEditData({ ...editData, name: e.target.value })} />
+                  {/* Zone settings */}
+                  <div style={styles.settingsGrid}>
+                    <div style={styles.fieldGroup}>
+                      <label style={styles.label}>Zone Name</label>
+                      <input style={styles.input} value={editData.name || ''} disabled={!editMode}
+                        onChange={e => setEditData({ ...editData, name: e.target.value })} />
+                    </div>
+                    <div style={styles.fieldGroup}>
+                      <label style={styles.label}>XP Reward</label>
+                      <input style={styles.input} type="number" value={editData.xpReward || 50} disabled={!editMode}
+                        onChange={e => setEditData({ ...editData, xpReward: Number(e.target.value) })} />
+                    </div>
+                    <div style={styles.fieldGroup}>
+                      <label style={styles.label}>Description</label>
+                      <input style={styles.input} value={editData.description || ''} disabled={!editMode}
+                        onChange={e => setEditData({ ...editData, description: e.target.value })} />
+                    </div>
+                    <div style={styles.fieldGroup}>
+                      <label style={styles.label}>Active</label>
+                      <select style={styles.select} value={editData.isActive} disabled={!editMode}
+                        onChange={e => setEditData({ ...editData, isActive: e.target.value === 'true' })}>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                      </select>
+                    </div>
                   </div>
-                  <div style={styles.fieldGroup}>
-                    <label style={styles.label}>XP Reward</label>
-                    <input style={styles.input} type="number" value={editData.xpReward || 50} disabled={!editMode}
-                      onChange={e => setEditData({ ...editData, xpReward: Number(e.target.value) })} />
-                  </div>
-                  <div style={styles.fieldGroup}>
-                    <label style={styles.label}>Description</label>
-                    <input style={styles.input} value={editData.description || ''} disabled={!editMode}
-                      onChange={e => setEditData({ ...editData, description: e.target.value })} />
-                  </div>
-                  <div style={styles.fieldGroup}>
-                    <label style={styles.label}>Active</label>
-                    <select style={styles.input} value={editData.isActive} disabled={!editMode}
-                      onChange={e => setEditData({ ...editData, isActive: e.target.value === 'true' })}>
-                      <option value="true">Active</option>
-                      <option value="false">Inactive</option>
-                    </select>
-                  </div>
-                </div>
 
-                {/* Questions editor */}
-                <h3 style={styles.questionsTitle}>Quiz Questions</h3>
-                {editData.questions?.map((q, qIndex) => (
-                  <div key={qIndex} style={styles.questionCard}>
-                    <div style={styles.questionNum}>Question {qIndex + 1}</div>
-                    <div style={styles.fieldGroup}>
-                      <label style={styles.label}>Question Text</label>
-                      <input style={styles.input} value={q.question || ''} disabled={!editMode}
-                        onChange={e => updateQuestion(qIndex, 'question', e.target.value)} />
-                    </div>
-                    <div style={styles.optionsGrid}>
-                      {q.options?.map((opt, optIndex) => (
-                        <div key={optIndex} style={styles.optionRow}>
-                          <span style={{
-                            ...styles.optionLetter,
-                            background: optIndex === q.correctAnswer ? '#00E676' : 'rgba(255,255,255,0.1)',
-                            color: optIndex === q.correctAnswer ? '#1a1a2e' : '#fff'
-                          }}>
-                            {String.fromCharCode(65 + optIndex)}
-                          </span>
-                          <input style={{ ...styles.input, flex: 1 }} value={opt || ''} disabled={!editMode}
-                            onChange={e => updateOption(qIndex, optIndex, e.target.value)} />
-                        </div>
-                      ))}
-                    </div>
-                    <div style={styles.fieldGroup}>
-                      <label style={styles.label}>Correct Answer (0=A, 1=B, 2=C, 3=D)</label>
-                      <input style={styles.input} type="number" min="0" max="3"
-                        value={q.correctAnswer} disabled={!editMode}
-                        onChange={e => updateQuestion(qIndex, 'correctAnswer', Number(e.target.value))} />
-                    </div>
-                    <div style={styles.fieldGroup}>
-                      <label style={styles.label}>Explanation (shown after answer)</label>
-                      <input style={styles.input} value={q.explanation || ''} disabled={!editMode}
-                        onChange={e => updateQuestion(qIndex, 'explanation', e.target.value)} />
-                    </div>
+                  {/* Divider */}
+                  <div style={styles.divider}>
+                    <span style={styles.dividerDiamond}>◆</span>
                   </div>
-                ))}
-              </>
-            )}
+
+                  {/* Questions editor */}
+                  <div style={styles.questionsTitle}>Quiz Questions</div>
+                  {editData.questions?.map((q, qIndex) => (
+                    <div key={qIndex} style={styles.questionCard}>
+                      <div style={styles.questionNum}>Question {qIndex + 1}</div>
+                      <div style={styles.fieldGroup}>
+                        <label style={styles.label}>Question Text</label>
+                        <input style={styles.input} value={q.question || ''} disabled={!editMode}
+                          onChange={e => updateQuestion(qIndex, 'question', e.target.value)} />
+                      </div>
+                      <div style={styles.optionsGrid}>
+                        {q.options?.map((opt, optIndex) => (
+                          <div key={optIndex} style={styles.optionRow}>
+                            <span style={{
+                              ...styles.optionLetter,
+                              background: optIndex === q.correctAnswer
+                                ? 'linear-gradient(180deg, #5cb85c, #2d5a27)'
+                                : 'linear-gradient(180deg, #d4bc82, #c9b078)',
+                              color: optIndex === q.correctAnswer ? '#fff' : '#3d2b1f',
+                            }}>
+                              {String.fromCharCode(65 + optIndex)}
+                            </span>
+                            <input style={{ ...styles.input, flex: 1 }} value={opt || ''} disabled={!editMode}
+                              onChange={e => updateOption(qIndex, optIndex, e.target.value)} />
+                          </div>
+                        ))}
+                      </div>
+                      <div style={styles.fieldGroup}>
+                        <label style={styles.label}>Correct Answer (0=A, 1=B, 2=C, 3=D)</label>
+                        <input style={styles.input} type="number" min="0" max="3"
+                          value={q.correctAnswer} disabled={!editMode}
+                          onChange={e => updateQuestion(qIndex, 'correctAnswer', Number(e.target.value))} />
+                      </div>
+                      <div style={styles.fieldGroup}>
+                        <label style={styles.label}>Explanation (shown after answer)</label>
+                        <input style={styles.input} value={q.explanation || ''} disabled={!editMode}
+                          onChange={e => updateQuestion(qIndex, 'explanation', e.target.value)} />
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -227,43 +259,207 @@ const AdminPanel = () => {
 };
 
 const styles = {
-  container: { minHeight: '100vh', background: '#1a1a2e', color: '#fff', overflow: 'auto' },
-  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 32px', borderBottom: '1px solid rgba(255,215,0,0.2)', background: 'rgba(0,0,0,0.4)' },
-  title: { color: '#FFD700', fontSize: '24px' },
+  container: {
+    minHeight: '100vh',
+    background: 'transparent',
+    color: '#3d2b1f', overflow: 'auto',
+    fontFamily: "'VT323', monospace",
+    position: 'relative',
+  },
+  header: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    padding: '12px 24px',
+    background: 'linear-gradient(180deg, #3d2b1f 0%, #5c3d28 50%, #3d2b1f 100%)',
+    borderBottom: '4px solid #2a1a0e',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.08)',
+    position: 'sticky', top: 0, zIndex: 100,
+  },
+  titleRow: { display: 'flex', alignItems: 'center', gap: '12px' },
+  title: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '12px',
+    color: '#f5e6c8', textShadow: '2px 2px 0 #2a1a0e', margin: 0,
+  },
+  titleDiamond: { color: '#c19a49', fontSize: '12px' },
   headerRight: { display: 'flex', alignItems: 'center', gap: '12px' },
-  adminBadge: { background: 'rgba(255,215,0,0.2)', border: '1px solid #FFD700', color: '#FFD700', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' },
-  logoutBtn: { background: 'rgba(255,82,82,0.2)', border: '1px solid #ff5252', color: '#ff5252', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' },
-  content: { maxWidth: '1100px', margin: '0 auto', padding: '24px 20px' },
-  statsRow: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' },
-  statCard: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,215,0,0.15)', borderRadius: '14px', padding: '20px', textAlign: 'center' },
-  statValue: { fontSize: '28px', fontWeight: 'bold', color: '#FFD700', margin: '6px 0' },
-  statLabel: { color: '#aaa', fontSize: '12px' },
-  mainGrid: { display: 'grid', gridTemplateColumns: '280px 1fr', gap: '20px' },
-  panelTitle: { color: '#FFD700', fontSize: '16px', marginBottom: '16px' },
-  zoneList: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  zoneItem: { display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px', cursor: 'pointer' },
-  zoneItemActive: { background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.4)' },
-  zoneInfo: { flex: 1 },
-  zoneSubInfo: { color: '#aaa', fontSize: '12px', marginTop: '2px' },
-  activeDot: { width: '10px', height: '10px', borderRadius: '50%', flexShrink: 0 },
-  editor: { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', overflowY: 'auto', maxHeight: '80vh' },
-  selectPrompt: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#aaa' },
-  editorHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
-  editorActions: { display: 'flex', gap: '10px', alignItems: 'center' },
-  savedMsg: { color: '#00E676', fontSize: '14px' },
-  editBtn: { padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,215,0,0.3)', background: 'rgba(255,215,0,0.1)', color: '#FFD700', cursor: 'pointer' },
-  cancelBtn: { padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: '#aaa', cursor: 'pointer' },
-  saveBtn: { padding: '8px 20px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#1a1a2e', fontWeight: 'bold', cursor: 'pointer' },
-  settingsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' },
-  fieldGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  label: { color: '#aaa', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' },
-  input: { padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,215,0,0.2)', background: 'rgba(255,255,255,0.06)', color: '#fff', fontSize: '14px', outline: 'none', width: '100%' },
-  questionsTitle: { color: '#FFD700', fontSize: '15px', margin: '20px 0 14px' },
-  questionCard: { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px', marginBottom: '16px' },
-  questionNum: { color: '#FFD700', fontSize: '13px', fontWeight: 'bold', marginBottom: '12px' },
-  optionsGrid: { display: 'flex', flexDirection: 'column', gap: '8px', margin: '12px 0' },
-  optionRow: { display: 'flex', alignItems: 'center', gap: '10px' },
-  optionLetter: { width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '13px', flexShrink: 0 }
+  adminBadge: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '7px',
+    padding: '5px 12px',
+    background: 'linear-gradient(180deg, #e8c252, #c19a49)',
+    border: '2px solid #8b6914', color: '#3d2b1f',
+    boxShadow: '2px 2px 0 #2a1a0e',
+    letterSpacing: '1px',
+  },
+  logoutBtn: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    padding: '8px 14px',
+    background: 'linear-gradient(180deg, #c44, #922)',
+    border: '2px solid #611', color: '#fdd',
+    cursor: 'pointer', boxShadow: '2px 2px 0 #2a1a0e',
+  },
+  content: {
+    maxWidth: '1100px', margin: '0 auto', padding: '20px 20px 80px',
+    position: 'relative', zIndex: 2,
+  },
+
+  /* Stats */
+  statsRow: {
+    display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '20px',
+  },
+  statCard: {
+    background: 'linear-gradient(180deg, #f5e6c8, #e8d5a3)',
+    border: '3px solid #3d2b1f', padding: '16px', textAlign: 'center',
+    boxShadow: '3px 3px 0 #2a1a0e, inset 1px 1px 0 rgba(255,255,255,0.3)',
+    animation: 'rpgFadeIn 0.4s ease-out',
+  },
+  statValue: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '14px',
+    color: '#8b6914', margin: '6px 0',
+  },
+  statLabel: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '6px',
+    color: '#7a6542', textTransform: 'uppercase',
+  },
+
+  /* Main grid */
+  mainGrid: { display: 'grid', gridTemplateColumns: '280px 1fr', gap: '16px' },
+
+  /* Zone list panel */
+  zoneListPanel: {
+    background: 'linear-gradient(180deg, #f5e6c8, #e8d5a3, #c4a96a)',
+    border: '4px solid #3d2b1f',
+    boxShadow: '4px 4px 0px #2a1a0e, inset 2px 2px 0 rgba(255,255,255,0.3)',
+    alignSelf: 'start',
+  },
+  panelHeader: {
+    background: 'linear-gradient(180deg, #3d2b1f, #5c3d28, #3d2b1f)',
+    padding: '8px 16px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+    borderBottom: '3px solid #2a1a0e',
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    color: '#f5e6c8', textShadow: '1px 1px 0 #2a1a0e',
+  },
+  panelHeaderDiamond: { color: '#c19a49', fontSize: '10px' },
+  zoneListInner: { padding: '10px', display: 'flex', flexDirection: 'column', gap: '6px' },
+  zoneItem: {
+    display: 'flex', alignItems: 'center', gap: '10px',
+    background: 'rgba(193,154,73,0.15)', border: '2px solid rgba(61,43,31,0.3)',
+    padding: '10px', cursor: 'pointer',
+    transition: 'all 0.15s',
+  },
+  zoneItemActive: {
+    background: 'linear-gradient(180deg, #e8c252, #c19a49)',
+    border: '2px solid #8b6914',
+    boxShadow: '0 0 10px rgba(193,154,73,0.4)',
+  },
+  zoneInfo: { flex: 1, minWidth: 0 },
+  zoneSubInfo: { color: '#7a6542', fontSize: '16px', marginTop: '2px' },
+  activeDot: {
+    width: '12px', height: '12px',
+    border: '2px solid #3d2b1f', flexShrink: 0,
+  },
+
+  /* Editor panel */
+  editorPanel: {
+    background: 'linear-gradient(180deg, #f5e6c8, #e8d5a3, #c4a96a)',
+    border: '4px solid #3d2b1f',
+    boxShadow: '4px 4px 0px #2a1a0e, inset 2px 2px 0 rgba(255,255,255,0.3)',
+    maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+  },
+  editorInner: { padding: '16px', overflowY: 'auto', flex: 1 },
+  selectPrompt: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    justifyContent: 'center', height: '200px',
+  },
+  editorActions: {
+    display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'flex-end',
+    marginBottom: '16px',
+  },
+  savedMsg: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px', color: '#2d5a27',
+  },
+  editBtn: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    padding: '8px 16px',
+    background: 'linear-gradient(180deg, #f5e6c8, #e8d5a3)',
+    border: '2px solid #3d2b1f', color: '#3d2b1f',
+    cursor: 'pointer', boxShadow: '2px 2px 0 #2a1a0e',
+  },
+  cancelBtn: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    padding: '8px 16px',
+    background: 'linear-gradient(180deg, #d4bc82, #c9b078)',
+    border: '2px solid #3d2b1f', color: '#7a6542',
+    cursor: 'pointer', boxShadow: '2px 2px 0 #2a1a0e',
+  },
+  saveBtn: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    padding: '8px 18px',
+    background: 'linear-gradient(180deg, #e8c252, #c19a49, #8b6914)',
+    border: '3px solid #8b6914', color: '#3d2b1f',
+    cursor: 'pointer', boxShadow: '2px 2px 0 #3d2b1f',
+  },
+
+  /* Settings */
+  settingsGrid: {
+    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px',
+  },
+  fieldGroup: { display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '4px' },
+  label: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '6px',
+    color: '#7a6542', textTransform: 'uppercase', letterSpacing: '1px',
+  },
+  input: {
+    padding: '8px 12px',
+    background: 'linear-gradient(180deg, #d4bc82, #c9b078)',
+    border: '2px solid #3d2b1f', color: '#3d2b1f', fontSize: '18px',
+    fontFamily: "'VT323', monospace",
+    boxShadow: 'inset 2px 2px 3px rgba(0,0,0,0.2)',
+    outline: 'none', width: '100%', boxSizing: 'border-box',
+  },
+  select: {
+    padding: '8px 12px',
+    background: 'linear-gradient(180deg, #d4bc82, #c9b078)',
+    border: '2px solid #3d2b1f', color: '#3d2b1f', fontSize: '18px',
+    fontFamily: "'VT323', monospace",
+    boxShadow: 'inset 2px 2px 3px rgba(0,0,0,0.2)',
+    outline: 'none', cursor: 'pointer',
+  },
+  divider: {
+    height: '3px',
+    background: 'linear-gradient(90deg, transparent, #3d2b1f, transparent)',
+    margin: '12px 0',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    position: 'relative',
+  },
+  dividerDiamond: {
+    background: '#e8d5a3', padding: '0 10px',
+    color: '#c19a49', fontSize: '10px', position: 'relative', top: '-1px',
+  },
+  questionsTitle: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '9px',
+    color: '#8b6914', margin: '8px 0 12px',
+    textTransform: 'uppercase', letterSpacing: '1px',
+  },
+  questionCard: {
+    background: 'rgba(193,154,73,0.15)', border: '2px solid rgba(61,43,31,0.3)',
+    padding: '14px', marginBottom: '12px',
+  },
+  questionNum: {
+    fontFamily: "'Press Start 2P', monospace", fontSize: '8px',
+    color: '#c19a49', marginBottom: '10px',
+  },
+  optionsGrid: { display: 'flex', flexDirection: 'column', gap: '6px', margin: '10px 0' },
+  optionRow: { display: 'flex', alignItems: 'center', gap: '8px' },
+  optionLetter: {
+    width: '28px', height: '28px',
+    border: '2px solid #3d2b1f',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontFamily: "'Press Start 2P', monospace", fontSize: '9px',
+    fontWeight: 'bold', flexShrink: 0,
+    boxShadow: '1px 1px 0 rgba(0,0,0,0.3)',
+  },
+
+  /* Ground */
 };
 
 export default AdminPanel;
