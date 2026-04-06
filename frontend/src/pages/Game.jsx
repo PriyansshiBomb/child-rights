@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { GameEngine } from '../game/GameEngine';
 import { useAuth } from '../hooks/useAuth';
 import { getZones, getMyProgress, saveProgress, getLeaderboard } from '../api/gameAPI';
+import { getStoryForZone } from '../api/aiAPI';
 import { useNavigate } from 'react-router-dom';
+import AICompanion from '../components/AICompanion';
 import '../App.css';
 
 /* ── RPG Palette ──────────────────────────────────────────── */
@@ -81,7 +83,6 @@ const Game = () => {
   const canvasRef  = useRef(null);
   const engineRef  = useRef(null);
   const { user, token, logout } = useAuth();
-  const navigate = useNavigate();
 
   const [zones,        setZones]        = useState([]);
   const [progress,     setProgress]     = useState(null);
@@ -114,6 +115,58 @@ const Game = () => {
     })();
   }, [token]);
 
+  /* ── Zone enter ─────────────────────────────────────────── */
+  const handleZoneEnter = useCallback(async (zone) => {
+    if (!zone.questions?.length) return;
+    setActiveZone(zone);
+    if (engineRef.current) engineRef.current.running = false;
+    
+    // Wargroove style dialogue before quiz
+    const npcName = zone.position?.npc ? zone.position.npc.charAt(0).toUpperCase() + zone.position.npc.slice(1) : 'NPC';
+    
+    setDialogue({
+      name: '✨ AI Storyteller',
+      text: `Welcome to the ${zone.name}! Give me a moment to recall an old tale about this place...`,
+      onComplete: async () => {
+        setDialogue({ name: '✨ AI Storyteller', text: 'Thinking...', onComplete: () => {} });
+        try {
+          const res = await getStoryForZone(zone.right);
+          setDialogue({
+            name: '✨ AI Storyteller',
+            text: res.story,
+            onComplete: () => {
+              setDialogue({
+                name: npcName,
+                text: `Hold it right there! If you want to explore the ${zone.name}, you gotta answer my questions first!`,
+                onComplete: () => {
+                  setDialogue(null);
+                  setQuizIndex(0);
+                  setQuizScore(0);
+                  setQuizDone(false);
+                  setFeedback(null);
+                  setQuizQuestion(zone.questions[0]);
+                }
+              });
+            }
+          });
+        } catch (e) {
+          setDialogue({
+            name: npcName,
+            text: `Hold it right there! If you want to explore the ${zone.name}, you gotta answer my questions first!`,
+            onComplete: () => {
+              setDialogue(null);
+              setQuizIndex(0);
+              setQuizScore(0);
+              setQuizDone(false);
+              setFeedback(null);
+              setQuizQuestion(zone.questions[0]);
+            }
+          });
+        }
+      }
+    });
+  }, []);
+
   /* ── Init engine ────────────────────────────────────────── */
   useEffect(() => {
     if (loading || zones.length === 0 || !canvasRef.current) return;
@@ -125,30 +178,8 @@ const Game = () => {
     engineRef.current = engine;
     engine.start();
     return () => engine.stop();
-  }, [loading, zones]);
+  }, [loading, zones, handleZoneEnter, progress?.zonesCompleted]);
 
-  /* ── Zone enter ─────────────────────────────────────────── */
-  const handleZoneEnter = useCallback((zone) => {
-    if (!zone.questions?.length) return;
-    setActiveZone(zone);
-    
-    // Wargroove style dialogue before quiz
-    const npcName = zone.position?.npc ? zone.position.npc.charAt(0).toUpperCase() + zone.position.npc.slice(1) : 'NPC';
-    setDialogue({
-      name: npcName,
-      text: `Hold it right there! If you want to explore the ${zone.name}, you gotta answer my questions first!`,
-      onComplete: () => {
-        setDialogue(null);
-        setQuizIndex(0);
-        setQuizScore(0);
-        setQuizDone(false);
-        setFeedback(null);
-        setQuizQuestion(zone.questions[0]);
-      }
-    });
-    
-    if (engineRef.current) engineRef.current.running = false;
-  }, []);
 
   /* ── Answer ─────────────────────────────────────────────── */
   const handleAnswer = async (optionIndex) => {
@@ -263,7 +294,7 @@ const Game = () => {
                 fontFamily: "'VT323', monospace",
                 border: `1px solid ${THEME.gold}`
               }}>
-                Parent ID: {user.childLoginCode}
+                Child ID: {user.childLoginCode}
               </div>
             )}
           </div>
@@ -565,6 +596,7 @@ const Game = () => {
           </div>
         </div>
       )}
+      <AICompanion context={activeZone ? `The child is currently in the ${activeZone.name}. They might need help or explanations related to the right to ${activeZone.right}.` : 'The child is exploring the map.'} />
     </div>
   );
 };

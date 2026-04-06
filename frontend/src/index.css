@@ -73,7 +73,7 @@
 /* ── Body — pixel-art background image ─────────────────── */
 body {
   font-family: var(--font-body);
-  font-size: 18px;
+  font-size: 22px;
   color: var(--text-dark);
   overflow: hidden;
   background-image: url('./rpg-bg.png');

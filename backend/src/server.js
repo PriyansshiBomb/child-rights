@@ -37,6 +37,7 @@ app.use('/api/progress',    require('./routes/progress'));
 app.use('/api/leaderboard', require('./routes/leaderboard'));
 app.use('/api/badges',      require('./routes/badges'));
 app.use('/api/zones',       require('./routes/zones'));
+app.use('/api/ai',          require('./routes/ai'));
 
 app.use((req, res) => {
   res.status(404).json({ message: `Route ${req.originalUrl} not found` });
@@ -55,3 +56,4 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV}`);
 });
+console.log('');
