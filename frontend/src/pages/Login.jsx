@@ -7,6 +7,8 @@ import '../App.css';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loginMode, setLoginMode] = useState('standard');
+  const [parentCode, setParentCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -17,11 +19,18 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      const data = await loginUser({ email, password });
-      login(data.user, data.token);
-      if (data.user.role === 'child') navigate('/game');
-      else if (data.user.role === 'parent') navigate('/parent');
-      else if (data.user.role === 'admin') navigate('/admin');
+      if (loginMode === 'parent') {
+        const { parentLoginByCode } = require('../api/authAPI');
+        const data = await parentLoginByCode(parentCode);
+        login({ ...data.user, isParentSession: true }, data.token);
+        navigate('/parent');
+      } else {
+        const data = await loginUser({ email, password });
+        login(data.user, data.token);
+        if (data.user.role === 'child') navigate('/game');
+        else if (data.user.role === 'parent') navigate('/parent');
+        else if (data.user.role === 'admin') navigate('/admin');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {
@@ -44,44 +53,82 @@ const Login = () => {
           <div style={styles.logo}>🌍</div>
           <p style={styles.subtitle}>Learn your rights, earn your badges!</p>
 
+          {/* Mode Toggle */}
+          <div style={styles.toggleRow}>
+            <button 
+              type="button"
+              style={loginMode === 'standard' ? styles.toggleActive : styles.toggleInactive}
+              onClick={() => setLoginMode('standard')}
+            >
+              Player Login
+            </button>
+            <button 
+              type="button"
+              style={loginMode === 'parent' ? styles.toggleActive : styles.toggleInactive}
+              onClick={() => setLoginMode('parent')}
+            >
+              Parent ID
+            </button>
+          </div>
+
           {error && <div style={styles.error}>⚠ {error}</div>}
 
           <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.fieldGroup}>
-              <label style={styles.label}>📧 Email</label>
-              <input
-                style={styles.input}
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div style={styles.fieldGroup}>
-              <label style={styles.label}>🔑 Password</label>
-              <input
-                style={styles.input}
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-              />
-            </div>
+            {loginMode === 'standard' ? (
+              <>
+                <div style={styles.fieldGroup}>
+                  <label style={styles.label}>📧 Email</label>
+                  <input
+                    style={styles.input}
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div style={styles.fieldGroup}>
+                  <label style={styles.label}>🔑 Password</label>
+                  <input
+                    style={styles.input}
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            ) : (
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>🛡️ Child's Parent ID</label>
+                <input
+                  style={{...styles.input, textAlign: 'center', letterSpacing: '3px', textTransform: 'uppercase'}}
+                  type="text"
+                  placeholder="e.g. X8F9PL"
+                  value={parentCode}
+                  onChange={e => setParentCode(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+            
             <button style={styles.button} type="submit" disabled={loading}>
-              {loading ? '⏳ Entering...' : '⚔️ Start Adventure'}
+              {loading ? '⏳ Entering...' : (loginMode === 'parent' ? '🛡️ Access Dashboard' : '⚔️ Start Adventure')}
             </button>
           </form>
 
-          <div style={styles.divider}>
-            <span style={styles.dividerDiamond}>◆</span>
-          </div>
-
-          <p style={styles.link}>
-            New here?{' '}
-            <Link to="/register" style={styles.linkText}>Create account</Link>
-          </p>
+          {loginMode === 'standard' && (
+            <>
+              <div style={styles.divider}>
+                <span style={styles.dividerDiamond}>◆</span>
+              </div>
+              <p style={styles.link}>
+                New here?{' '}
+                <Link to="/register" style={styles.linkText}>Create account</Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
 
@@ -228,11 +275,25 @@ const styles = {
     fontFamily: "'VT323', monospace",
   },
   linkText: {
-    color: '#8b6914',
-    textDecoration: 'none',
-    fontWeight: 'bold',
-    borderBottom: '2px dashed #c19a49',
-    paddingBottom: '1px',
+    color: '#8b6914', textDecoration: 'none', fontWeight: 'bold',
+    borderBottom: '2px dashed #c19a49', paddingBottom: '1px',
+  },
+  toggleRow: {
+    display: 'flex', gap: '8px', marginBottom: '24px',
+    backgroundColor: '#3d2b1f', padding: '6px', borderRadius: '4px',
+    boxShadow: 'inset 0 4px 6px rgba(0,0,0,0.4)',
+  },
+  toggleActive: {
+    flex: 1, padding: '8px', fontSize: '16px', fontFamily: "'VT323', monospace",
+    background: 'linear-gradient(180deg, #c4a96a 0%, #a88d55 100%)',
+    border: '2px solid #ecd1a5', color: '#1a110a', fontWeight: 'bold',
+    cursor: 'pointer', outline: 'none', borderRadius: '2px',
+    boxShadow: '0 2px 0 #5c3d28',
+  },
+  toggleInactive: {
+    flex: 1, padding: '8px', fontSize: '16px', fontFamily: "'VT323', monospace",
+    background: 'transparent', border: '2px solid transparent',
+    color: '#a88d55', cursor: 'pointer', outline: 'none',
   },
   _unused: {
     position: 'absolute',

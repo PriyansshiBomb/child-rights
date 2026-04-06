@@ -15,6 +15,14 @@ const ParentDashboard = () => {
   const [childEmail, setChildEmail] = useState('');
   const [searchError, setSearchError] = useState('');
 
+  // If using the childID code parent session, pre-populate and hide search
+  useEffect(() => {
+    if (user?.isParentSession && user?.id) {
+      setChildren([{ id: user.id, username: user.username }]);
+      loadChildProgress(user.id);
+    }
+  }, [user?.isParentSession, user?.id]);
+
   const searchChild = async () => {
     setSearchError('');
     setLoading(true);
@@ -76,30 +84,32 @@ const ParentDashboard = () => {
       </div>
 
       <div style={styles.content}>
-        {/* Search card */}
-        <div style={styles.searchCard}>
-          <div style={styles.searchHeader}>
-            <span style={styles.searchHeaderDiamond}>◆</span>
-            <span style={styles.searchHeaderText}>🔍 Find Your Child's Account</span>
-            <span style={styles.searchHeaderDiamond}>◆</span>
-          </div>
-          <div style={styles.searchInner}>
-            <p style={styles.hint}>Enter your child's registered email to view their progress</p>
-            <div style={styles.searchRow}>
-              <input
-                style={styles.input}
-                placeholder="Child's email address"
-                value={childEmail}
-                onChange={e => setChildEmail(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && searchChild()}
-              />
-              <button style={styles.searchBtn} onClick={searchChild} disabled={loading}>
-                {loading ? '⏳' : '🔍 Search'}
-              </button>
+        {/* Search card (hidden if logged in via specific Child ID) */}
+        {!user?.isParentSession && (
+          <div style={styles.searchCard}>
+            <div style={styles.searchHeader}>
+              <span style={styles.searchHeaderDiamond}>◆</span>
+              <span style={styles.searchHeaderText}>🔍 Find Your Child's Account</span>
+              <span style={styles.searchHeaderDiamond}>◆</span>
             </div>
-            {searchError && <p style={styles.error}>⚠ {searchError}</p>}
+            <div style={styles.searchInner}>
+              <p style={styles.hint}>Enter your child's registered email to view their progress</p>
+              <div style={styles.searchRow}>
+                <input
+                  style={styles.input}
+                  placeholder="Child's email address"
+                  value={childEmail}
+                  onChange={e => setChildEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && searchChild()}
+                />
+                <button style={styles.searchBtn} onClick={searchChild} disabled={loading}>
+                  {loading ? '⏳' : '🔍 Search'}
+                </button>
+              </div>
+              {searchError && <p style={styles.error}>⚠ {searchError}</p>}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Child tabs */}
         {children.length > 0 && (

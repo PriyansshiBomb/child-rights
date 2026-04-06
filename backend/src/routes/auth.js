@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, getMe } = require('../controllers/authController');
+const { register, login, getMe, parentLoginByCode } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 const User = require('../models/User');
 
 router.post('/register', register);
 router.post('/login', login);
+router.post('/parent-login', parentLoginByCode);
 router.get('/me', protect, getMe);
 
 router.get('/find', protect, async (req, res) => {

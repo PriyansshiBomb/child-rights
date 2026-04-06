@@ -252,6 +252,20 @@ const Game = () => {
           <div>
             <div style={S.username}>{user?.username}</div>
             <div style={S.roleTag}>Rights Explorer</div>
+            {user?.childLoginCode && (
+              <div style={{
+                fontSize: '12px',
+                color: THEME.gold,
+                background: THEME.woodDark,
+                padding: '2px 6px',
+                borderRadius: '4px',
+                marginTop: '4px',
+                fontFamily: "'VT323', monospace",
+                border: `1px solid ${THEME.gold}`
+              }}>
+                Parent ID: {user.childLoginCode}
+              </div>
+            )}
           </div>
           <div style={S.levelPill}>Lv {level}</div>
         </div>

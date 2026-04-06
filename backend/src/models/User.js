@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema({
     enum: ['child', 'parent', 'admin'],
     default: 'child'
   },
+  childLoginCode: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   parentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

@@ -23,6 +23,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
+    // If it's a child logged in as a parent via Child ID, let them through to parent roles
+    if (user.isParentSession && allowedRoles.includes('parent')) {
+      return children;
+    }
     // Redirect to appropriate page based on role
     if (user.role === 'child') return <Navigate to="/game" replace />;
     if (user.role === 'parent') return <Navigate to="/parent" replace />;

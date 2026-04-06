@@ -18,3 +18,8 @@ export const getMe = async (token) => {
   });
   return response.data;
 };
+
+export const parentLoginByCode = async (code) => {
+  const response = await axios.post(`${BASE_URL}/auth/parent-login`, { code });
+  return response.data;
+};

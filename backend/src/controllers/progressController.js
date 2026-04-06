@@ -140,6 +140,10 @@ const getChildProgress = async (req, res) => {
   try {
     const { childId } = req.params;
 
+    if (req.user.role !== 'parent' && req.user.role !== 'admin' && req.user._id.toString() !== childId) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
     const progress = await Progress.findOne({ userId: childId })
       .populate('zonesCompleted.zoneId', 'name right color')
       .populate('badgesEarned.badgeId', 'name icon description')

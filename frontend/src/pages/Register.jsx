@@ -8,6 +8,9 @@ const Register = () => {
   const [form, setForm] = useState({ username: '', email: '', password: '', role: 'child' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showCodeModal, setShowCodeModal] = useState(false);
+  const [childCode, setChildCode] = useState('');
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -20,13 +23,25 @@ const Register = () => {
     try {
       const data = await registerUser(form);
       login(data.user, data.token);
-      if (data.user.role === 'child') navigate('/game');
-      else if (data.user.role === 'parent') navigate('/parent');
+      
+      if (data.user.role === 'child' && data.user.childLoginCode) {
+        setChildCode(data.user.childLoginCode);
+        setShowCodeModal(true);
+      } else if (data.user.role === 'child') {
+        navigate('/game');
+      } else if (data.user.role === 'parent') {
+        navigate('/parent');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
+  };
+
+  const finalizeRegistration = () => {
+    setShowCodeModal(false);
+    navigate('/game');
   };
 
   return (
@@ -98,6 +113,38 @@ const Register = () => {
         </div>
       </div>
 
+      {showCodeModal && (
+        <div style={styles.overlay}>
+          <div style={{ ...styles.card, margin: 0, padding: 0 }}>
+            <div style={styles.banner}>
+              <div style={styles.bannerDiamond}>◆</div>
+              <span style={styles.bannerText}>Secret Parent Code</span>
+              <div style={styles.bannerDiamond}>◆</div>
+            </div>
+            <div style={styles.innerBorder}>
+              <p style={styles.subtitle}>
+                Registration successful! Give this code to your parents so they can login and see your progress.
+              </p>
+              <div style={{
+                background: '#ecd1a5', border: '3px solid #3d2b1f', padding: '16px',
+                textAlign: 'center', margin: '20px 0', fontSize: '32px', letterSpacing: '4px',
+                fontFamily: "'VT323', monospace", fontWeight: 'bold'
+              }}>
+                {childCode}
+              </div>
+              <button 
+                style={styles.button} 
+                onClick={() => {
+                  navigator.clipboard.writeText(childCode);
+                  finalizeRegistration();
+                }}
+              >
+                Copy & Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -231,6 +278,15 @@ const styles = {
     color: '#8b6914', textDecoration: 'none', fontWeight: 'bold',
     borderBottom: '2px dashed #c19a49', paddingBottom: '1px',
   },
+  overlay: {
+    position: 'fixed',
+    top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(0, 0, 0, 0.7)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000
+  }
 };
 
 export default Register;

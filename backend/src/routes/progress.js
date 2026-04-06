@@ -6,6 +6,6 @@ const { restrictTo } = require('../middleware/roles');
 
 router.get('/me', protect, getMyProgress);
 router.post('/save', protect, saveProgress);
-router.get('/child/:childId', protect, restrictTo('parent', 'admin'), getChildProgress);
+router.get('/child/:childId', protect, getChildProgress);
 
 module.exports = router;
