@@ -2,16 +2,18 @@ export class ZoneManager {
   constructor(zones) {
     // Override positions to neatly sit on our new paths and bridges (48px tiles)
     const positions = [
-      { x: 9.5 * 48, y: 9.5 * 48, npc: 'bandit' }, // Center crossroad
-      { x: 9.5 * 48, y: 3.5 * 48, npc: 'knight' }, // North towards statue
-      { x: 13.5 * 48, y: 9.5 * 48, npc: 'dog' },    // East bridge
-      { x: 5.5 * 48, y: 9.5 * 48, npc: 'knight' }, // West path
-      { x: 16.5 * 48, y: 12.5 * 48, npc: 'bandit' } // South East harbor path
+      { x: 5.5 * 48, y: 9.5 * 48, npc: 'knight' },  // Far west path
+      { x: 9.5 * 48, y: 9.5 * 48, npc: 'bandit' },  // Center crossroad
+      { x: 14.5 * 48, y: 9.5 * 48, npc: 'dog' },    // Far east bridge
+      { x: 9.5 * 48, y: 4.5 * 48, npc: 'knight' },  // Far north path
+      { x: 17.5 * 48, y: 12.5 * 48, npc: 'dog' },   // Deep south east harbor
+      { x: 9.5 * 48, y: 13.5 * 48, npc: 'bandit' }, // Far south
+      { x: 1.5 * 48, y: 13.5 * 48, npc: 'dog' }     // Deep south west
     ];
 
     this.zones = zones.map((z, i) => ({
       ...z,
-      position: positions[i] || { x: 9.5 * 48, y: 6.5 * 48, npc: 'dog' },
+      position: positions[i % positions.length],
       radius: 20
     }));
     this.glowTimer = 0;

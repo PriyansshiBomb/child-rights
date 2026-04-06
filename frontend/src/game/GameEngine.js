@@ -100,7 +100,7 @@ export class GameEngine {
     this.player.update(this.keys, MAP_WIDTH, MAP_HEIGHT);
 
     const { x, y } = this.player;
-    const r = 14;
+    const r = 8; // Reduced from 14 to make squeezing through bridges much smoother
     if (
       checkCollision(x - r, y - r) || checkCollision(x + r, y - r) ||
       checkCollision(x - r, y + r) || checkCollision(x + r, y + r)

@@ -120,7 +120,7 @@ const Game = () => {
     const completedIds = progress?.zonesCompleted?.map(z => z.zoneId?._id || z.zoneId) || [];
     const engine = new GameEngine(
       canvasRef.current, zones, completedIds,
-      handleZoneEnter, progress?.playerPosition,
+      handleZoneEnter
     );
     engineRef.current = engine;
     engine.start();
