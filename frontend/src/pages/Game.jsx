@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { GameEngine } from '../game/GameEngine';
 import { useAuth } from '../hooks/useAuth';
 import { getZones, getMyProgress, saveProgress, getLeaderboard } from '../api/gameAPI';
-import { getStoryForZone } from '../api/aiAPI';
+import { getStoryForZone, getAIQuiz } from '../api/aiAPI';
 import { useNavigate } from 'react-router-dom';
 import AICompanion from '../components/AICompanion';
 import '../App.css';
@@ -82,6 +82,7 @@ const SectionLabel = ({ children, icon }) => (
 const Game = () => {
   const canvasRef  = useRef(null);
   const engineRef  = useRef(null);
+  const progressRef = useRef(null); // Keep latest progress without triggering re-renders
   const { user, token, logout } = useAuth();
 
   const [zones,        setZones]        = useState([]);
@@ -115,6 +116,11 @@ const Game = () => {
     })();
   }, [token]);
 
+  // Keep progressRef in sync
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
+
   /* ── Zone enter ─────────────────────────────────────────── */
   const handleZoneEnter = useCallback(async (zone) => {
     if (!zone.questions?.length) return;
@@ -130,10 +136,18 @@ const Game = () => {
       onComplete: async () => {
         setDialogue({ name: '✨ AI Storyteller', text: 'Thinking...', onComplete: () => {} });
         try {
-          const res = await getStoryForZone(zone.right);
+          const [resStory, resQuiz] = await Promise.all([
+            getStoryForZone(zone.right),
+            getAIQuiz(zone.name, zone.right, progressRef.current)
+          ]);
+          
+          if (resQuiz && resQuiz.questions && resQuiz.questions.length > 0) {
+            zone.questions = resQuiz.questions;
+          }
+
           setDialogue({
             name: '✨ AI Storyteller',
-            text: res.story,
+            text: resStory.story,
             onComplete: () => {
               setDialogue({
                 name: npcName,

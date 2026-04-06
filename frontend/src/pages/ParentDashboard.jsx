@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { getChildProgress } from '../api/gameAPI';
+import { getParentReport, askParentChat } from '../api/aiAPI';
 import axios from 'axios';
 import '../App.css';
 
@@ -14,6 +15,14 @@ const ParentDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [childEmail, setChildEmail] = useState('');
   const [searchError, setSearchError] = useState('');
+  
+  // AI states
+  const [aiReport, setAiReport] = useState('');
+  const [reportLoading, setReportLoading] = useState(false);
+  
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatLoading, setChatLoading] = useState(false);
 
   // If using the childID code parent session, pre-populate and hide search
   useEffect(() => {
@@ -49,14 +58,49 @@ const ParentDashboard = () => {
 
   const loadChildProgress = async (childId) => {
     setLoading(true);
+    // Reset AI states when switching child
+    setAiReport('');
+    setChatMessages([]);
     try {
       const data = await getChildProgress(token, childId);
       setProgress(data.progress);
       setSelectedChild(childId);
+      
+      // Auto-generate AI report
+      generateReport(data.progress);
     } catch (err) {
       console.error('Failed to load child progress:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateReport = async (progData) => {
+    setReportLoading(true);
+    try {
+      const res = await getParentReport(progData);
+      setAiReport(res.report);
+    } catch (err) {
+      setAiReport('Could not generate AI report at this time.');
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || chatLoading) return;
+    const msg = chatInput.trim();
+    setChatInput('');
+    setChatMessages(prev => [...prev, { role: 'user', text: msg }]);
+    setChatLoading(true);
+    
+    try {
+      const res = await askParentChat(msg, progress);
+      setChatMessages(prev => [...prev, { role: 'ai', text: res.response }]);
+    } catch (err) {
+      setChatMessages(prev => [...prev, { role: 'ai', text: 'Oops! I had trouble understanding that.' }]);
+    } finally {
+      setChatLoading(false);
     }
   };
 
@@ -141,6 +185,73 @@ const ParentDashboard = () => {
                   <div style={styles.statLabel}>{stat.label}</div>
                 </div>
               ))}
+            </div>
+
+            {/* AI Insights Card */}
+            <div style={{ ...styles.card, border: '4px solid #c19a49' }}>
+              <div style={{ ...styles.cardHeader, background: 'linear-gradient(180deg, #5c3d28, #3d2b1f)' }}>
+                <span style={styles.cardHeaderDiamond}>◆</span>
+                <span style={{ color: '#e8c252' }}>✨ AI Progress Summary & Consult</span>
+                <span style={styles.cardHeaderDiamond}>◆</span>
+              </div>
+              <div style={styles.cardBody}>
+                {/* Auto Report */}
+                <div style={styles.reportBox}>
+                  <h3 style={{ margin: '0 0 8px 0', fontSize: '20px', color: '#8b6914' }}>Weekly Report</h3>
+                  {reportLoading ? (
+                    <p style={{ color: '#7a6542' }}>Generating insights...</p>
+                  ) : (
+                    <p style={{ fontSize: '18px', lineHeight: 1.5, margin: 0 }}>{aiReport}</p>
+                  )}
+                </div>
+
+                <hr style={{ border: 'none', borderBottom: '2px dashed rgba(61,43,31,0.2)', margin: '16px 0' }} />
+
+                {/* Parent Q&A Bot */}
+                <div style={styles.qaBox}>
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: '20px', color: '#8b6914' }}>Ask the AI Advisor</h3>
+                  <div style={styles.messagesBox}>
+                    {chatMessages.length === 0 && (
+                      <div style={{ color: '#7a6542', fontStyle: 'italic', marginBottom: '8px' }}>
+                        Ask me about your child's progress! (e.g. "How are they doing?", "What should we practice?")
+                      </div>
+                    )}
+                    {chatMessages.map((msg, i) => (
+                      <div key={i} style={{
+                        display: 'flex',
+                        justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                        marginBottom: '8px'
+                      }}>
+                        <div style={{
+                          background: msg.role === 'user' ? '#c19a49' : '#f5e6c8',
+                          color: '#3d2b1f',
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          maxWidth: '85%',
+                          border: '2px solid rgba(61,43,31,0.2)',
+                          fontSize: '18px'
+                        }}>
+                          {msg.text}
+                        </div>
+                      </div>
+                    ))}
+                    {chatLoading && <div style={{ color: '#7a6542', fontStyle: 'italic' }}>AI is typing...</div>}
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                    <input
+                      style={{ ...styles.input, fontSize: '18px' }}
+                      placeholder="Ask the AI..."
+                      value={chatInput}
+                      onChange={e => setChatInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && sendChatMessage()}
+                    />
+                    <button style={styles.searchBtn} onClick={sendChatMessage}>
+                      Ask
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* XP Progress bar */}
@@ -233,7 +344,7 @@ const ParentDashboard = () => {
 
 const styles = {
   container: {
-    minHeight: '100vh',
+    height: '100vh',
     background: 'transparent',
     color: '#3d2b1f', overflow: 'auto',
     fontFamily: "'VT323', monospace",
@@ -408,7 +519,26 @@ const styles = {
   },
   badgeDate: { fontSize: '16px', color: '#7a6542', marginTop: '4px' },
 
-  /* Ground */
+  /* AI Components */
+  reportBox: {
+    background: 'rgba(193,154,73,0.15)',
+    padding: '16px',
+    borderRadius: '6px',
+    border: '1px solid rgba(193,154,73,0.4)',
+  },
+  qaBox: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  messagesBox: {
+    maxHeight: '200px',
+    overflowY: 'auto',
+    background: 'rgba(255,255,255,0.1)',
+    padding: '10px',
+    border: '2px solid rgba(61,43,31,0.2)',
+    borderRadius: '6px',
+    marginBottom: '8px',
+  }
 };
 
 export default ParentDashboard;
